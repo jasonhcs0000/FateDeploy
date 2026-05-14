@@ -3,7 +3,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 // @ts-ignore
 import * as ephemeris from 'ephemeris';
 
-import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi } from './weightData';
+import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA } from './weightData';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -152,22 +152,17 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const tone = mayanTones[(kin - 1) % 13];
 
   // 6. Authentic Onomancy (姓名學 - 三合/六合 生肖)
-  const zodiac = lunar.getYearShengXiao();
-  const animalElements: Record<string, string> = {
-    "鼠": "喜用「申(猴)、辰(龍)」之三合字根，忌用「午、未」相沖字。",
-    "牛": "喜用「巳(蛇)、酉(雞)」之三合字根，宜有「草」部首。",
-    "虎": "喜用「午(馬)、戌(狗)」之三合字根，忌「申、巳」相刑字。",
-    "兔": "喜用「亥(豬)、未(羊)」之三合字根，宜有「木、草」部首。",
-    "龍": "喜用「申(猴)、子(鼠)」之三合字根，象徵飛龍在天，得水化勢。",
-    "蛇": "喜用「酉(雞)、丑(牛)」之三合字根，忌有「亥」相沖字根。",
-    "馬": "喜用「寅(虎)、戌(狗)」之三合字根，宜有「草、木」相生。",
-    "羊": "喜用「亥(豬)、卯(兔)」之三合字根，忌用「丑、戌」字。",
-    "猴": "喜用「子(鼠)、辰(龍)」之三合字根，宜有「木、水」相生。",
-    "雞": "喜用「巳(蛇)、丑(牛)」之三合字根，忌用「卯、戌」字根。",
-    "狗": "喜用「寅(虎)、午(馬)」之三合字根，忌用「辰、丑」相刑字。",
-    "豬": "喜用「卯(兔)、未(羊)」之三合字根，忌用「巳、申」字。"
-  };
-  let onomancyDesc = animalElements[zodiac] || `本命屬${zodiac}，起名宜順應生肖本性，喜用相生之五行字根。`;
+  const rawZodiac = lunar.getYearShengXiao();
+  const zodiac = ZODIAC_SIMPLIFIED_MAP[rawZodiac] || rawZodiac;
+  const onomancyData = ZODIAC_ON_DATA[zodiac];
+
+  let onomancyDesc = '';
+  if (onomancyData) {
+    onomancyDesc = `本命屬${zodiac}，${onomancyData.nature}。起名喜用：${onomancyData.favorable}；忌用：${onomancyData.taboo}。`;
+  } else {
+    onomancyDesc = `本命屬${zodiac}，起名宜順應生肖本性，喜用相生之五行字根。`;
+  }
+
   if (weightNum >= 5.0) {
     onomancyDesc += "（天選之子模式：建議起名時選用金、木屬性字根，以增強命格結構。）";
   }
