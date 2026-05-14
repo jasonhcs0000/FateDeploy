@@ -301,7 +301,7 @@ export default function Home() {
           <div className="bg-[#05050f] border border-blue-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(59,130,246,0.2)] overflow-hidden">
             {/* Background Spinning Zodiac Ring */}
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-              <SunDim className="w-[180%] h-[180%] text-blue-400 animate-spin-slow" />
+              <SunDim className="w-[180%] h-[180%] text-blue-400 animate-spin" style={{ animationDuration: '60s' }} />
             </div>
 
             <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-blue-400/50 m-2"></div>
