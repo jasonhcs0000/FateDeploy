@@ -1,21 +1,40 @@
-import { Solar, Lunar } from 'lunar-typescript';
+import { diagnoseSolarEphemeris, getHumanDesign } from './lib/humanDesignLogic';
 
-const inputDate = new Date("1989-03-06");
-const solar = Solar.fromDate(inputDate);
-const lunar = Lunar.fromDate(inputDate);
-const lunarDay = lunar.getDay();
+console.log("🔭 人類圖科學引擎 v2.0 — 天文診斷報告\n");
+console.log("=".repeat(50));
 
-const seed1 = solar.getYear() * 10000 + solar.getMonth() * 100 + lunarDay;
-const hash1 = (seed1 * 9301 + 49297) % 233280;
-const randType = (hash1 / 233280) * 100;
+const diag = diagnoseSolarEphemeris(1989, 3, 6, 13.5);
+console.log("\n📡 1989-03-06 13:30 天文診斷:");
+console.log(`  ★ 太陽真黃經 (λ):   ${diag.trueLongitude.toFixed(4)}°`);
+console.log(`  ★ 太陽閘門:          閘門 ${diag.gate} — 爻 ${diag.line} (中心: ${diag.center})`);
 
-let hdTypeKey = "";
-if (randType < 37) hdTypeKey = "純生產者";
-else if (randType < 70) hdTypeKey = "顯示生產者";
-else if (randType < 90) hdTypeKey = "投射者";
-else if (randType < 99) hdTypeKey = "顯示者";
-else hdTypeKey = "反映者";
+// 判斷是否是情緒中心 (Solar Plexus = 動力中心)
+const isMotorCenter = ['heart', 'solar', 'root'].includes(diag.center);
+console.log(`  ★ 動力中心:          ${isMotorCenter ? '✅ 是動力中心！' : '❌ 非動力中心'}`);
 
-console.log("Date:", "1989-03-06");
-console.log("RandType:", randType);
-console.log("HD Type:", hdTypeKey);
+const earthLon = (diag.trueLongitude + 180) % 360;
+const earthDiag = diagnoseSolarEphemeris(1989, 3, 6, 13.5);
+// Just show earth manually
+console.log(`  地球黃經:            ${earthLon.toFixed(4)}°`);
+
+console.log("\n" + "=".repeat(50));
+console.log("\n🧬 類型判定測試:\n");
+
+// hourIndex 6 = 午時 (12:00-14:00)
+const result = getHumanDesign(1989, 3, 6, 6);
+console.log(`  太陽閘門: ${result.sunGate} (爻 ${result.sunLine})`);
+console.log(`  地球閘門: ${result.earthGate} (爻 ${result.earthLine})`);
+console.log(`  薦骨中心: ${result.isSacralDefined ? '已定義 ✓' : '未定義 ✗'}`);
+console.log(`  動力->喉嚨: ${result.isThroatConnectedToMotor ? '已連通 ✓' : '未連通 ✗'}`);
+console.log(`  定義的中心: [${result.definedCenters.join(', ')}]`);
+console.log(`\n  ★ 類型: ${result.type} (${result.typeEn})`);
+console.log(`  ★ 人生角色: ${result.profile}`);
+
+console.log("\n" + "=".repeat(50));
+if (result.type === "顯示者") {
+  console.log(`\n✅ 金標驗證通過！1989-03-06 正確識別為「${result.type}」`);
+  process.exit(0);
+} else {
+  console.error(`\n❌ 金標驗證失敗！預期「顯示者」，實際「${result.type}」`);
+  process.exit(1);
+}

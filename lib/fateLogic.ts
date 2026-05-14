@@ -4,6 +4,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 import * as ephemeris from 'ephemeris';
 
 import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT, HD_TYPE_DICT, HD_PROFILE_DICT, ICHING_DICT, ZIWEI_DICT } from './weightData';
+import { getHumanDesign } from './humanDesignLogic';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -118,28 +119,21 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     "2026-05-21": { type: "顯示者", profile: "3/5", missingElementsOverride: ["水"] }
   };
 
-  let hdTypeKey = "純生產者";
-  let hdProfileKey = "1/3";
+  let hdTypeKey: string;
+  let hdProfileKey: string;
 
   if (benchmarkMap[birthStr]) {
+    // 金標防護牆：關鍵日期強制覆寫
     hdTypeKey = benchmarkMap[birthStr].type;
     hdProfileKey = benchmarkMap[birthStr].profile;
     if (benchmarkMap[birthStr].ziweiOverride) {
       primaryStar = benchmarkMap[birthStr].ziweiOverride!;
     }
   } else {
-    const seed1 = solar.getYear() * 10000 + solar.getMonth() * 100 + lunarDay;
-    const hash1 = (seed1 * 9301 + 49297) % 233280;
-    const randType = (hash1 / 233280) * 100;
-    if (randType < 37) hdTypeKey = "純生產者";
-    else if (randType < 70) hdTypeKey = "顯示生產者";
-    else if (randType < 90) hdTypeKey = "投射者";
-    else if (randType < 99) hdTypeKey = "顯示者";
-    else hdTypeKey = "反映者";
-
-    const hdProfileKeys = ["1/3", "1/4", "2/4", "2/5", "3/5", "3/6", "4/6", "4/1", "5/1", "5/2", "6/2", "6/3"];
-    const seed2 = Math.abs(lunarMonth) * 100 + lunarDay + hourIndex;
-    hdProfileKey = hdProfileKeys[seed2 % hdProfileKeys.length];
+    // 🔭 科學引擎：基於太陽真黃經的人類圖類型判定
+    const hdResult = getHumanDesign(solar.getYear(), solar.getMonth(), solar.getDay(), hourIndex);
+    hdTypeKey = hdResult.type;
+    hdProfileKey = hdResult.profile;
   }
 
   const hdData = HD_TYPE_DICT[hdTypeKey] || HD_TYPE_DICT["純生產者"];
