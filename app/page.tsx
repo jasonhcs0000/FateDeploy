@@ -343,7 +343,7 @@ export default function Home() {
                 今日戰術：{fateData.iching.transformedData.strategy}
               </div>
               <p className="text-rose-100/80 text-sm tracking-wide leading-relaxed border-t border-rose-500/20 pt-3 relative z-10 line-clamp-2">
-                {fateData.iching.transformedData.hshBusinessAdvice}
+                {(fateData.iching.transformedData as any).decisionAdvice || (fateData.iching.transformedData as any).hshBusinessAdvice}
               </p>
               {fateData.iching.warning && (
                 <div className="mt-2 w-2 h-2 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,1)] rounded-full animate-ping absolute bottom-4 right-4 z-10"></div>
@@ -594,11 +594,11 @@ export default function Home() {
                   </p>
                 </div>
                 
-                {/* 4. Space Deploy (HSH Space Logic) */}
+                {/* 4. Environment Vibe */}
                 <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
-                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">空間部署 (SPACE DEPLOY)</h4>
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">環境共振建議 (ENVIRONMENT VIBE)</h4>
                   <p className="text-indigo-200 tracking-wide leading-relaxed text-sm">
-                    {fateData.humanDesign.typeData.spaceDeploy}
+                    {(fateData.humanDesign.typeData as any).environmentVibe || (fateData.humanDesign.typeData as any).spaceDeploy}
                   </p>
                 </div>
 
@@ -696,11 +696,11 @@ export default function Home() {
                   </p>
                 </div>
                 
-                {/* HSH Advice */}
+                {/* 3. Decision Advice */}
                 <div className="bg-rose-950/10 p-4 border border-rose-500/10">
-                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-400/60 mb-2">事業與空間 (BUSINESS & SPACE)</h4>
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-400/60 mb-2">決策戰略建議 (DECISION STRATEGY)</h4>
                   <p className="text-rose-200/80 tracking-wide leading-relaxed text-sm">
-                    {fateData.iching.transformedData.hshBusinessAdvice}
+                    {(fateData.iching.transformedData as any).decisionAdvice || (fateData.iching.transformedData as any).hshBusinessAdvice}
                   </p>
                 </div>
 

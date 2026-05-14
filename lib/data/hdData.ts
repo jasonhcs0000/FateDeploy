@@ -1,38 +1,38 @@
-export const HD_TYPE_DICT: Record<string, { type: string; strategy: string; signature: string; notSelf: string; spaceDeploy: string }> = {
+export const HD_TYPE_DICT: Record<string, { type: string; strategy: string; signature: string; notSelf: string; environmentVibe: string }> = {
   "純生產者": {
     "type": "純生產者 (Generator)",
     "strategy": "等待回應 (Wait to Respond)",
     "signature": "滿足感 (Satisfaction)",
     "notSelf": "挫敗感 (Frustration) —— 當你試圖用意志力去發起事物，而非等待生命把選項帶到你面前時，你會感到深沉的無力與挫敗。",
-    "spaceDeploy": "在 HSH SPACE 配置中，你需要一個『能讓你沉浸在喜愛事物中』的工作站。不要勉強自己待在無法引起你熱情的空間，這會迅速抽乾你的能量池。"
+    "environmentVibe": "在理想的環境配置中，你需要一個『能讓你沉浸在喜愛事物中』的工作站。不要勉強自己待在無法引起你熱情的空間，這會迅速抽乾你的能量池。"
   },
   "顯示生產者": {
     "type": "顯示生產者 (Manifesting Generator)",
     "strategy": "等待回應後發起 (Wait to Respond, then Inform)",
     "signature": "滿足感與和平 (Satisfaction & Peace)",
     "notSelf": "挫敗與憤怒 (Frustration & Anger) —— 當你跳過回應直接行動，或者在執行過程中缺乏耐心而頻繁變更方向時，你會感到極度的暴躁。",
-    "spaceDeploy": "在 HSH SPACE 配置中，你的空間必須具備『高靈活性與多工切換』的特質。避免過於死板的動線設計，讓你能隨時從一個專案快速轉移到下一個專案。"
+    "environmentVibe": "在日常空間配置中，你的空間必須具備『高靈活性與多工切換』的特質。避免過於死板的動線設計，讓你能隨時從一個專案快速轉移到下一個專案。"
   },
   "顯示者": {
     "type": "顯示者 (Manifestor)",
     "strategy": "告知 (To Inform)",
     "signature": "和平 (Peace)",
     "notSelf": "憤怒 (Anger) —— 當你的行動受到阻礙、被質疑或被要求解釋時，你會因為『被打斷』而爆發出強烈的憤怒。",
-    "spaceDeploy": "在 HSH SPACE 配置中，你需要絕對的『掌控權與專屬領域』。確保空間中有一個完全屬於你、且不受他人無預警打擾的獨立隔間，這能有效降低你的防禦與憤怒。"
+    "environmentVibe": "你的理想工作環境應具備絕對的『掌控權與專屬領域』。確保空間中有一個完全屬於你、且不受他人無預警打擾的獨立隔間，這能有效降低你的防禦與憤怒。"
   },
   "投射者": {
     "type": "投射者 (Projector)",
     "strategy": "等待邀請 (Wait for the Invitation)",
     "signature": "成功 (Success)",
     "notSelf": "苦澀 (Bitterness) —— 當你主動給予建議卻不被珍惜，或是拼命工作卻未獲賞識時，你會感到深深的苦澀與不被理解。",
-    "spaceDeploy": "你容易吸收環境壓力，在 HSH SPACE 的配置中，你需要一個完全屬於自己的『能量隔絕角落』。避免長時間待在人多吵雜的公共區域，你需要空間來排解他人的情緒廢物。"
+    "environmentVibe": "你容易吸收環境壓力，在日常空間配置中，你需要一個完全屬於自己的『能量隔絕角落』。避免長時間待在人多吵雜的公共區域，你需要空間來排解他人的情緒廢物。"
   },
   "反映者": {
     "type": "反映者 (Reflector)",
     "strategy": "等待月亮週期 (Wait a Lunar Cycle)",
     "signature": "驚喜 (Surprise)",
     "notSelf": "失望 (Disappointment) —— 當你身處錯誤的環境，或者被要求立刻做出重大決定時，你會對周遭的平庸與混亂感到深沉的失望。",
-    "spaceDeploy": "在 HSH SPACE 的配置中，請務必避免過於繁瑣的裝飾，保持空間『清冷、透光、極簡』。你是環境的鏡子，清透的空間能幫助你釐清哪些是別人的情緒，哪些是你的本質。"
+    "environmentVibe": "在理想的環境配置中，請務必避免過於繁瑣的裝飾，保持空間『清冷、透光、極簡』。你是環境的鏡子，清透的空間能幫助你釐清哪些是別人的情緒，哪些是你的本質。"
   }
 };
 
