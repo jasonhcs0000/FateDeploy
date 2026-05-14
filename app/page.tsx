@@ -314,11 +314,14 @@ export default function Home() {
                 <Sparkles className="w-4 h-4 mr-2" /> 薩比恩占星
               </h2>
               <div className="text-xl font-bold mb-1 text-blue-300 tracking-wider font-[family-name:var(--font-noto-serif-tc)] relative z-10">
-                太陽經緯：{fateData.astrology.sabian}
+                {fateData.astrology.sabianPrecise || fateData.astrology.sabian}
               </div>
               <p className="text-blue-100/80 text-sm tracking-wide leading-relaxed border-t border-blue-500/20 pt-3 relative z-10 line-clamp-2">
                 {fateData.astrology.data.title}
               </p>
+              <div className="text-[10px] text-blue-400/50 tracking-widest mt-1 relative z-10">
+                索引 {fateData.astrology.absoluteDegree} · 閘門 {fateData.humanDesign.sunGate}
+              </div>
               <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-500"></div>
             </div>
 
@@ -422,8 +425,18 @@ export default function Home() {
               <h3 className="text-xl font-bold text-blue-200 mb-3 tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
                 {fateData.astrology.data.title}
               </h3>
-              <div className="text-sm font-bold tracking-widest text-blue-400/80 mb-6 border border-blue-500/30 px-4 py-1 bg-blue-900/20">
-                太陽經緯：{fateData.astrology.sabian}
+              {/* 精確天文座標 */}
+              <div className="text-sm font-bold tracking-widest text-blue-400/80 mb-2 border border-blue-500/30 px-4 py-1 bg-blue-900/20">
+                太陽黃經：{(fateData.astrology.sunLongitude ?? 0).toFixed(3)}°
+              </div>
+              <div className="flex items-center gap-3 mb-6 text-[10px] tracking-widest">
+                <span className="text-blue-300/70 bg-blue-900/20 border border-blue-500/20 px-2 py-0.5">
+                  {fateData.astrology.sabianPrecise || fateData.astrology.sabian}
+                </span>
+                <span className="text-blue-500/40">·</span>
+                <span className="text-indigo-300/70 bg-indigo-900/20 border border-indigo-500/20 px-2 py-0.5">
+                  閘門 {fateData.humanDesign.sunGate} 共振
+                </span>
               </div>
               
               <div className="text-left space-y-5 w-full">

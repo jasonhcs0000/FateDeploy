@@ -119,21 +119,25 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     "2026-05-21": { type: "顯示者", profile: "3/5", missingElementsOverride: ["水"] }
   };
 
+  // 🔭 科學引擎：開始計算，輸出太陽真黃經（同時供 HD + 薩比恩共用）
+  const hdSciResult = getHumanDesign(solar.getYear(), solar.getMonth(), solar.getDay(), hourIndex);
+  // 太陽黃經：全站天文數據的單一來源
+  const sciSunLongitude = hdSciResult.sunLongitude;
+
   let hdTypeKey: string;
   let hdProfileKey: string;
 
   if (benchmarkMap[birthStr]) {
-    // 金標防護牆：關鍵日期強制覆寫
+    // 金標防護牆：關鍵日期強制覆寫類型
     hdTypeKey = benchmarkMap[birthStr].type;
     hdProfileKey = benchmarkMap[birthStr].profile;
     if (benchmarkMap[birthStr].ziweiOverride) {
       primaryStar = benchmarkMap[birthStr].ziweiOverride!;
     }
   } else {
-    // 🔭 科學引擎：基於太陽真黃經的人類圖類型判定
-    const hdResult = getHumanDesign(solar.getYear(), solar.getMonth(), solar.getDay(), hourIndex);
-    hdTypeKey = hdResult.type;
-    hdProfileKey = hdResult.profile;
+    // 其他日期：使用科學引擎的判定結果
+    hdTypeKey = hdSciResult.type;
+    hdProfileKey = hdSciResult.profile;
   }
 
   const hdData = HD_TYPE_DICT[hdTypeKey] || HD_TYPE_DICT["純生產者"];
@@ -220,19 +224,20 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     onomancyDesc += "（天選之子模式：建議起名時選用金、木屬性字根，以增強命格結構。）";
   }
 
-  let eclipticLongitude = 0;
-  try {
-    const ephResult = ephemeris.getAllPlanets(birthDate, 0, 0, 0);
-    eclipticLongitude = ephResult.observed.sun.apparentLongitude;
-  } catch (e) {
-    eclipticLongitude = solar.getYear() % 360; 
-  }
+  // 6b. Sabian Symbols via Scientific Solar Longitude
+  // 全站天文數據同步：使用和人類圖相同的太陽黃經
+  const eclipticLongitude = sciSunLongitude;
   
   const signs = ["牡羊座", "金牛座", "雙子座", "巨蟹座", "獅子座", "處女座", "天秤座", "天蠍座", "射手座", "摩羯座", "水瓶座", "雙魚座"];
-  const signIdx = Math.floor(eclipticLongitude / 30);
-  const signDegree = Math.floor(eclipticLongitude % 30) + 1;
+  const signIdx = Math.floor(eclipticLongitude / 30) % 12;
+  // 薩比恩度數公式: floor(lon % 30) + 1 取得 1-30 度（衣魚座第 15.96° → 16度）
+  const signDegreeRaw = eclipticLongitude % 30;           // 小數度數 (15.96)
+  const signDegree = Math.floor(signDegreeRaw) + 1;       // 薩比恩度數 1-30 (16)
+  // 絕對黃道度數 346 = floor(345.96) + 1
   const absoluteDegree = Math.floor(eclipticLongitude) + 1;
-  const sign = signs[signIdx % 12];
+  const sign = signs[signIdx];
+  // 精確度數文字 (e.g. "16.0°")
+  const signDegreeExact = signDegreeRaw.toFixed(2);
   
   const sabianData = SABIAN_SYMBOLS[absoluteDegree] || { title: "宇宙深處的未知星辰", elementVibe: "混沌共振", deepMeaning: "此度數暫未收錄", advice: "傾聽宇宙的低語" };
   
@@ -335,11 +340,24 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
       missingElements: missingElements
     },
     ziwei: { star: primaryStar, data: ziweiDataObj, warning: ziweiWarning, mingGongZhi },
-    humanDesign: { typeData: hdData, profileData: hdProfileData, warning: hdWarning },
+    humanDesign: { 
+      typeData: hdData, 
+      profileData: hdProfileData, 
+      warning: hdWarning,
+      sunGate: hdSciResult.sunGate,
+      sunLongitude: sciSunLongitude,
+    },
     tarot: { soulNumber: soulSum, data: tarotDataObj, warning: tarotWarning },
     mayan: { kin: `Kin ${kin}`, title: `${tone}${totemData.name}`, desc: totemData.desc },
     onomancy: { zodiac: zodiac, desc: onomancyDesc },
-    astrology: { sabian: `${sign} ${signDegree}度`, data: sabianData, warning: sabianWarning },
+    astrology: { 
+      sabian: `${sign} ${signDegree}度`, 
+      sabianPrecise: `${sign} ${signDegreeExact}°`,
+      absoluteDegree: absoluteDegree,
+      sunLongitude: sciSunLongitude,
+      data: sabianData, 
+      warning: sabianWarning 
+    },
     iching: { 
       hexagram: hexagramName, 
       transformedHexagram: finalTransformedHexagramName, 
