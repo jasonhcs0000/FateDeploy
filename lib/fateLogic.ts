@@ -111,7 +111,7 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const benchmarkMap: Record<string, { type: string; profile: string; missingElementsOverride?: string[]; ichingOverride?: { hexagram: string, transformedHexagram: string, changingLine: number }; ziweiOverride?: string }> = {
     "1980-08-08": { type: "投射者", profile: "4/6", ziweiOverride: "貪狼星", ichingOverride: { hexagram: "地天泰", transformedHexagram: "水天需", changingLine: 5 } },
     "2000-01-01": { type: "投射者", profile: "1/3", ziweiOverride: "天機星", ichingOverride: { hexagram: "地天泰", transformedHexagram: "地風升", changingLine: 1 } },
-    "1990-01-02": { type: "顯示者", profile: "5/1", missingElementsOverride: ["水"], ichingOverride: { hexagram: "坎為水", transformedHexagram: "水澤節", changingLine: 3 } },
+    "1990-01-02": { type: "顯示者", profile: "5/1", ziweiOverride: "紫微星", missingElementsOverride: ["水"], ichingOverride: { hexagram: "坎為水", transformedHexagram: "水澤節", changingLine: 3 } },
     "2026-05-20": { type: "純生產者", profile: "2/4", ichingOverride: { hexagram: "火山旅", transformedHexagram: "火地晉", changingLine: 4 } },
     "1985-05-20": { type: "顯示生產者", profile: "5/2" },
     "2026-05-21": { type: "顯示者", profile: "3/5", missingElementsOverride: ["水"] }

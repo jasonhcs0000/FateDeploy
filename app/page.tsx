@@ -800,19 +800,12 @@ export default function Home() {
                     {fateData.ziwei.data.lifeChallenge}
                   </p>
                 </div>
-                
-                {/* 4. HSH Fortune Advice */}
-                <div className="bg-amber-950/20 p-4 border border-amber-500/20">
-                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-amber-500/80 mb-2">營運戰略建議 (HSH FORTUNE ADVICE)</h4>
-                  <p className="text-amber-200 tracking-wide leading-relaxed text-sm">
-                    {fateData.ziwei.data.hshFortuneAdvice}
-                  </p>
-                </div>
 
-                {/* 5. Resonance Warning */}
+                {/* 4. Resonance Warning */}
                 {fateData.ziwei.warning && (
-                  <div className="mt-2 p-3 bg-red-950/60 border border-red-500/50 rounded-sm flex items-start animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.3)]">
-                    <p className="text-red-200 tracking-wide text-sm leading-relaxed font-bold">
+                  <div className="mt-2 p-3 bg-red-950/60 border border-red-500/50 rounded-sm flex items-start animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.5)] relative">
+                    <div className="absolute inset-0 border border-red-500/30 animate-ping rounded-sm"></div>
+                    <p className="text-red-200 tracking-wide text-sm leading-relaxed font-bold relative z-10">
                       {fateData.ziwei.warning}
                     </p>
                   </div>
