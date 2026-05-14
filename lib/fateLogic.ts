@@ -3,7 +3,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 // @ts-ignore
 import * as ephemeris from 'ephemeris';
 
-import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT } from './weightData';
+import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT, HD_TYPE_DICT, HD_PROFILE_DICT } from './weightData';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -14,8 +14,9 @@ export class BaziWeightEngine {
   }
 
   static getMonthWeight(month: number): number {
-    if (month >= 1 && month <= 12) {
-      return MONTH_WEIGHTS[month - 1];
+    const absMonth = Math.abs(month);
+    if (absMonth >= 1 && absMonth <= 12) {
+      return MONTH_WEIGHTS[absMonth - 1];
     }
     throw new Error(`BaziWeightEngine Error: Invalid Month '${month}'`);
   }
@@ -117,11 +118,35 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const ziwei = ziweiStars[mingGongZhi] || ziweiStars["辰"];
 
   // 3. Human Design (Mapped to precise Solar Longitude / Hexagrams)
-  // Accurate HD Type based on Solar Month positioning
-  const hdTypes = ["純生產者", "顯示生產者", "顯示者", "投射者", "反映者"];
-  const hdType = hdTypes[(solar.getMonth() + lunarDay) % hdTypes.length];
-  const hdProfiles = ["1/3", "2/4", "3/5", "4/6", "5/1", "6/2"];
-  const hdProfile = hdProfiles[(lunarMonth + lunarDay + hourIndex) % hdProfiles.length];
+  const hdTypeKeys = ["純生產者", "顯示生產者", "顯示者", "投射者", "反映者"];
+  const hdTypeKey = hdTypeKeys[(solar.getMonth() + lunarDay) % hdTypeKeys.length];
+  const hdProfileKeys = ["1/3", "1/4", "2/4", "2/5", "3/5", "3/6", "4/6", "4/1", "5/1", "5/2", "6/2", "6/3"];
+  const hdProfileKey = hdProfileKeys[(Math.abs(lunarMonth) + lunarDay + hourIndex) % hdProfileKeys.length];
+  const hdData = HD_TYPE_DICT[hdTypeKey];
+  const hdProfileData = HD_PROFILE_DICT[hdProfileKey];
+  
+  let hdWarning = "";
+  const yearZhi = bazi[1];
+  const monthZhi = bazi[3];
+  const dayZhi = bazi[5];
+  const hourZhi = bazi[7];
+  
+  // Resonance 1: Projector + Heavy Bazi
+  if (hdTypeKey === "投射者" && weightNum >= 5.0) {
+    hdWarning = "⚠️ 靈魂衝突警示：你的命格具備強大的推進力，但你的能量設計卻需要『等待邀請』。盲目衝刺只會帶來苦澀，請學會等待正確的舞台出現。";
+  }
+  // Resonance 2: Reflector + Cardinal Signs
+  let fourCardinalsCount = 0;
+  [yearZhi, monthZhi, dayZhi, hourZhi].forEach(z => {
+    if (['子', '午', '卯', '酉'].includes(z)) fourCardinalsCount++;
+  });
+  if (hdTypeKey === "反映者" && fourCardinalsCount >= 2) {
+    hdWarning = "⚠️ 靈魂衝突警示：你的能量場對環境極度敏感，且命格中帶有強烈的感官碰撞。在 HSH SPACE 的配置中，請務必避免過於繁瑣的裝飾，保持空間清冷、透光，這能幫助你釐清哪些是別人的情緒，哪些是你的本質。";
+  }
+  // Resonance 3: Manifestor + Light Bazi
+  if (hdTypeKey === "顯示者" && weightNum <= 3.0) {
+    hdWarning = "⚠️ 靈魂衝突警示：你的靈魂渴望發起（顯示者），但你的『燃料庫』（重量）相對有限。請學會『精準發起』而非『全面開火』，否則極易導致能量枯竭後的嚴重憤怒感。";
+  }
   
   // 4. Tarot (Mapped to Numerology of the Date)
   const dateDigits = format(birthDate, 'yyyyMMdd');
@@ -130,7 +155,7 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     soulSum += parseInt(dateDigits[i]);
   }
   
-  if (soulSum > 22) {
+  while (soulSum > 22) {
     let tempSum = 0;
     const sumStr = soulSum.toString();
     for (let i = 0; i < sumStr.length; i++) {
@@ -143,8 +168,8 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const tarotData = TAROT_DICT[soulSum] || TAROT_DICT[22];
   
   let tarotWarning = "";
-  if ((soulSum === 4 || soulSum === 7 || soulSum === 8 || soulSum === 15 || soulSum === 16) && (naYin.includes('火') || naYin.includes('金'))) {
-    tarotWarning = `⚠️ 跨維度能量共振備註：你的塔羅靈魂數為『${tarotData.archetype.split(' ')[1]}』，象徵強大的意志與能量；結合你八字中過旺的金火之氣，請務必注意不要讓這股力量變成對他人的侵略與絕對的控制慾。`;
+  if ((soulSum === 4 || soulSum === 7 || soulSum === 8 || soulSum === 15 || soulSum === 16) && (naYin.includes('火') || naYin.includes('金') || naYin.includes('土'))) {
+    tarotWarning = `⚠️ 跨維度能量共振備註：你的塔羅靈魂數為『${tarotData.archetype.split(' ')[1]}』，象徵強大的意志與能量；結合你八字中極度沉穩或爆發的金火土之氣，請務必注意不要讓這股力量變成對他人的侵略與絕對的控制慾。`;
   } else if ((soulSum === 2 || soulSum === 12 || soulSum === 18) && (naYin.includes('水') || naYin.includes('木'))) {
     tarotWarning = `⚠️ 跨維度能量共振備註：你的塔羅靈魂數為『${tarotData.archetype.split(' ')[1]}』，象徵深層潛意識的流動；結合你八字中過度蔓延的水木之氣，請務必注意設立情緒界線，不要讓自己溺斃在受害者情結的深淵中。`;
   }
@@ -244,7 +269,7 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
       desc: baziProphecy 
     },
     ziwei: ziwei,
-    humanDesign: { title: `${hdType} ${hdProfile}`, desc: "無窮能量，自帶解決問題的權威感。" },
+    humanDesign: { typeData: hdData, profileData: hdProfileData, warning: hdWarning },
     tarot: tarot,
     mayan: { kin: `Kin ${kin}`, title: `${tone}${totemData.name}`, desc: totemData.desc },
     onomancy: { zodiac: zodiac, desc: onomancyDesc },

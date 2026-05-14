@@ -19,6 +19,7 @@ export default function Home() {
   const [sealPopup, setSealPopup] = useState(false);
   const [sabianPopup, setSabianPopup] = useState(false);
   const [tarotPopup, setTarotPopup] = useState(false);
+  const [hdPopup, setHdPopup] = useState(false);
 
   const SealedCard = ({ title, icon: Icon, message }: { title: string, icon: any, message: string }) => (
     <div 
@@ -193,7 +194,25 @@ export default function Home() {
             <SealedCard title="紫微矩陣" icon={Star} message="星象觀測中，紫微斗數天機尚在編譯..." />
 
             {/* 3. Human Design */}
-            <SealedCard title="人類圖" icon={Activity} message="能量場域掃描中，生命設計圖尚未顯影..." />
+            <div 
+              onClick={() => setHdPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-cyan-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <Activity className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-cyan-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-cyan-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Activity className="w-4 h-4 mr-2" /> 人類圖
+              </h2>
+              <div className="text-xl font-bold mb-1 text-cyan-300 tracking-wider font-[family-name:var(--font-noto-serif-tc)] relative z-10 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+                {fateData.humanDesign.typeData.type}
+              </div>
+              <div className="text-xs font-mono text-cyan-500/60 mb-3 tracking-widest relative z-10">
+                人生角色：{fateData.humanDesign.profileData.profile}
+              </div>
+              <p className="text-cyan-100/80 text-sm tracking-wide leading-relaxed border-t border-cyan-500/20 pt-3 relative z-10 line-clamp-2">
+                策略：{fateData.humanDesign.typeData.strategy}
+              </p>
+              <div className="absolute inset-0 bg-cyan-500/0 group-hover:bg-cyan-500/5 transition-colors duration-500"></div>
+            </div>
 
             {/* 4. Tarot */}
             <div 
@@ -441,6 +460,98 @@ export default function Home() {
                 className="mt-8 px-8 py-3 bg-amber-900/20 border border-amber-500/30 text-amber-500 hover:bg-amber-900/40 hover:border-amber-400 transition-all text-sm tracking-widest font-bold w-full"
               >
                 收攏牌面
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Human Design Modal */}
+      {hdPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/85 backdrop-blur-md">
+          <div className="bg-[#000a0a] border border-cyan-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(34,211,238,0.15)] overflow-hidden">
+            {/* Background Abstract Watermark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
+              <Activity className="w-96 h-96 text-cyan-500" />
+            </div>
+
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-cyan-500/50 m-2"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-cyan-500/50 m-2"></div>
+            
+            <button 
+              onClick={() => setHdPopup(false)}
+              className="absolute top-4 right-4 text-cyan-500/60 hover:text-cyan-400 transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
+              <div className="text-cyan-500 mb-2 tracking-[0.3em] text-xs font-sans">HUMAN DESIGN DEBUG LOG</div>
+              <h3 className="text-3xl font-black text-cyan-400 mb-2 tracking-[0.2em] drop-shadow-[0_0_10px_rgba(34,211,238,0.4)]">
+                {fateData.humanDesign.typeData.type}
+              </h3>
+              <div className="text-xs font-bold tracking-widest text-cyan-600/80 mb-6 border-b border-cyan-500/20 pb-2 px-8">
+                {fateData.humanDesign.profileData.profile}
+              </div>
+              
+              <div className="text-left space-y-4 w-full">
+                {/* 1. Strategy & Signature */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-cyan-900/10 p-3 border border-cyan-500/10">
+                    <h4 className="text-[10px] font-sans tracking-[0.2em] text-cyan-500/80 mb-1">人生策略 (STRATEGY)</h4>
+                    <p className="text-cyan-100/90 tracking-wide text-sm font-bold">
+                      {fateData.humanDesign.typeData.strategy}
+                    </p>
+                  </div>
+                  <div className="bg-cyan-900/10 p-3 border border-cyan-500/10">
+                    <h4 className="text-[10px] font-sans tracking-[0.2em] text-cyan-500/80 mb-1">成功標籤 (SIGNATURE)</h4>
+                    <p className="text-cyan-100/90 tracking-wide text-sm font-bold">
+                      {fateData.humanDesign.typeData.signature}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Profile Desc */}
+                <div className="bg-cyan-900/10 p-4 border border-cyan-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-cyan-400/80 mb-2">角色特質 (PROFILE)</h4>
+                  <p className="text-cyan-200/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.humanDesign.profileData.desc}
+                  </p>
+                </div>
+                
+                {/* 3. Not-Self (Red accent for error) */}
+                <div className="bg-red-950/20 p-4 border border-red-500/20 border-l-2 border-l-red-500 shadow-[inset_0_0_15px_rgba(220,38,38,0.05)]">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-red-400/90 mb-2 flex items-center">
+                    <span className="mr-2">⚠️</span> 非我主題 (NOT-SELF)
+                  </h4>
+                  <p className="text-red-200/90 tracking-wide leading-relaxed text-sm font-medium">
+                    {fateData.humanDesign.typeData.notSelf}
+                  </p>
+                </div>
+                
+                {/* 4. Space Deploy (HSH Space Logic) */}
+                <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">空間部署 (SPACE DEPLOY)</h4>
+                  <p className="text-indigo-200 tracking-wide leading-relaxed text-sm">
+                    {fateData.humanDesign.typeData.spaceDeploy}
+                  </p>
+                </div>
+
+                {/* 5. Resonance Warning */}
+                {fateData.humanDesign.warning && (
+                  <div className="mt-2 p-3 bg-orange-950/40 border border-orange-500/30 rounded-sm flex items-start">
+                    <p className="text-orange-300 tracking-wide text-xs leading-relaxed font-bold">
+                      {fateData.humanDesign.warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={() => setHdPopup(false)}
+                className="mt-6 px-8 py-3 bg-cyan-900/20 border border-cyan-500/30 text-cyan-500 hover:bg-cyan-900/40 hover:border-cyan-400 transition-all text-sm tracking-widest font-bold w-full"
+              >
+                關閉除錯紀錄
               </button>
             </div>
           </div>
