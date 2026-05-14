@@ -1,1 +1,0 @@
-const { Solar } = require('lunar-typescript'); const d1 = Solar.fromYmd(1989, 3, 6).getJulianDay(); const d2 = Solar.fromYmd(2000, 1, 1).getJulianDay(); const d3 = Solar.fromYmd(2012, 12, 21).getJulianDay(); const d4 = Solar.fromYmd(2024, 2, 10).getJulianDay(); const d5 = Solar.fromYmd(2026, 5, 20).getJulianDay(); console.log(d1, d2, d3, d4, d5);  

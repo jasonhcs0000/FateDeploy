@@ -3,7 +3,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 // @ts-ignore
 import * as ephemeris from 'ephemeris';
 
-import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS } from './weightData';
+import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS } from './weightData';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -188,16 +188,21 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const signs = ["牡羊座", "金牛座", "雙子座", "巨蟹座", "獅子座", "處女座", "天秤座", "天蠍座", "射手座", "摩羯座", "水瓶座", "雙魚座"];
   const signIdx = Math.floor(eclipticLongitude / 30);
   const signDegree = Math.floor(eclipticLongitude % 30) + 1; // Sabian degrees are 1-30
+  const absoluteDegree = Math.floor(eclipticLongitude) + 1; // 1-360
   const sign = signs[signIdx % 12];
   
-  // Representative pseudo-sabian descriptive mappings based on degree
-  const sabians = [
-    "剛從海中升起的女性，正被海豹擁抱", "一位喜劇演員在展現人類本性", "陽光穿透雲層，照亮了隱藏的黃金", 
-    "兩隻精靈在月光下共舞", "一位年輕國王拔出石頭中的寶劍", "古老的羊皮卷在月光下閃耀",
-    "一隻展翅高飛的老鷹，俯視著大地", "隱士在洞穴中點亮了智慧之燈", "一艘船在平靜的海面上揚帆起航",
-    "星空下的圖書館，充滿了宇宙的秘密"
-  ];
-  const sabianDesc = sabians[signDegree % sabians.length];
+  const sabianData = SABIAN_SYMBOLS[absoluteDegree] || { title: "宇宙深處的未知星辰", elementVibe: "混沌共振：超越屬性的神秘力量", deepMeaning: "此度數暫未收錄", advice: "傾聽宇宙的低語" };
+  
+  let sabianWarning = "";
+  if (sabianData.elementVibe.includes("火能共振") && naYin.includes("火")) {
+    sabianWarning = "⚠️ 警告：你的星盤度數與八字火能產生共振，今年需特別注意情緒控管，避免燒毀周遭的機會。";
+  } else if (sabianData.elementVibe.includes("土能共振") && naYin.includes("土")) {
+    sabianWarning = "⚠️ 警告：你的星盤度數與八字土能產生共振，能量過於沉重，今年請避免固執己見，擁抱變動。";
+  } else if (sabianData.elementVibe.includes("風能共振") && (naYin.includes("金") || naYin.includes("水"))) {
+    sabianWarning = "⚠️ 警告：你的星盤風能與八字產生流動共振，思維可能過於飄忽，今年需特別注意落地與執行。";
+  } else if (sabianData.elementVibe.includes("水能共振") && naYin.includes("水")) {
+    sabianWarning = "⚠️ 警告：你的星盤度數與八字水能產生共振，情感張力達到極限，請謹防捲入複雜的人際旋渦。";
+  }
 
   // 8. Authentic Plum Blossom Divination (梅花易數 卦象)
   // Trigrams: 乾1, 兌2, 離3, 震4, 巽5, 坎6, 艮7, 坤8. (0 maps to 8/Kun)
@@ -231,7 +236,7 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     tarot: tarot,
     mayan: { kin: `Kin ${kin}`, title: `${tone}${totemData.name}`, desc: totemData.desc },
     onomancy: { zodiac: zodiac, desc: onomancyDesc },
-    astrology: { sabian: `${sign} ${signDegree}度`, desc: sabianDesc },
+    astrology: { sabian: `${sign} ${signDegree}度`, data: sabianData, warning: sabianWarning },
     iching: { hexagram: hexagramName, lines: lines, desc: ichingDesc }
   };
 }

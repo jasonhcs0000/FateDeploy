@@ -1,1 +1,0 @@
-const { DreamspellDate } = require('@oshimishi/dreamspell-math'); const dates = [[2026,5,20],[1989,3,6],[2000,1,1],[2012,12,21],[2024,2,10]]; dates.forEach(arr => { const d = new DreamspellDate(arr[0], arr[1], arr[2]); console.log(arr.join('-') + ' -> ' + d.kin); });  

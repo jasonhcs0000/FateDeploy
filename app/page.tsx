@@ -17,6 +17,7 @@ export default function Home() {
   const [isSearchingNodes, setIsSearchingNodes] = useState(false);
   
   const [sealPopup, setSealPopup] = useState(false);
+  const [sabianPopup, setSabianPopup] = useState(false);
 
   const SealedCard = ({ title, icon: Icon, message }: { title: string, icon: any, message: string }) => (
     <div 
@@ -227,7 +228,22 @@ export default function Home() {
             </div>
 
             {/* 7. Sabian Symbols */}
-            <SealedCard title="薩比恩占星" icon={Sparkles} message="黃道能量微弱，度數象徵尚未浮現..." />
+            <div 
+              onClick={() => setSabianPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-blue-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <Sparkles className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-blue-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-blue-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Sparkles className="w-4 h-4 mr-2" /> 薩比恩占星
+              </h2>
+              <div className="text-xl font-bold mb-1 text-blue-300 tracking-wider font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                太陽經緯：{fateData.astrology.sabian}
+              </div>
+              <p className="text-blue-100/80 text-sm tracking-wide leading-relaxed border-t border-blue-500/20 pt-3 relative z-10 line-clamp-2">
+                {fateData.astrology.data.title}
+              </p>
+              <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors duration-500"></div>
+            </div>
 
             {/* 8. I-Ching */}
             <SealedCard title="易經卦象" icon={Scale} message="因緣未具，此卦象暫不可見。" />
@@ -273,6 +289,67 @@ export default function Home() {
                 className="mt-8 px-8 py-3 bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-800/60 hover:border-indigo-400 transition-all text-sm tracking-widest font-bold w-full"
               >
                 確認返回
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sabian Deep Dive Modal */}
+      {sabianPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/80 backdrop-blur-md">
+          <div className="bg-[#05050f] border border-blue-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(59,130,246,0.2)] overflow-hidden">
+            {/* Background Spinning Zodiac Ring */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+              <SunDim className="w-[180%] h-[180%] text-blue-400 animate-spin-slow" />
+            </div>
+
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-blue-400/50 m-2"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-blue-400/50 m-2"></div>
+            
+            <button 
+              onClick={() => setSabianPopup(false)}
+              className="absolute top-4 right-4 text-blue-400/60 hover:text-blue-300 transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-4 relative z-10">
+              <Sparkles className="w-10 h-10 text-blue-400 mb-4 drop-shadow-[0_0_10px_rgba(96,165,250,0.5)]" />
+              <h3 className="text-xl font-bold text-blue-200 mb-3 tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
+                {fateData.astrology.data.title}
+              </h3>
+              <div className="text-sm font-bold tracking-widest text-blue-400/80 mb-6 border border-blue-500/30 px-4 py-1 bg-blue-900/20">
+                太陽經緯：{fateData.astrology.sabian}
+              </div>
+              
+              <div className="text-left space-y-5 w-full">
+                <div>
+                  <h4 className="text-xs tracking-[0.3em] text-blue-500/80 mb-2 border-b border-blue-500/20 pb-1">深層意義</h4>
+                  <p className="text-blue-100/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.astrology.data.deepMeaning}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-xs tracking-[0.3em] text-blue-500/80 mb-2 border-b border-blue-500/20 pb-1">靈魂進化建議</h4>
+                  <p className="text-blue-200 tracking-wide leading-relaxed text-sm font-bold">
+                    {fateData.astrology.data.advice}
+                  </p>
+                </div>
+                {fateData.astrology.warning && (
+                  <div className="mt-4 p-3 bg-red-900/20 border border-red-500/30 rounded-sm">
+                    <p className="text-red-300 tracking-wide text-xs leading-relaxed font-bold">
+                      {fateData.astrology.warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={() => setSabianPopup(false)}
+                className="mt-8 px-8 py-3 bg-blue-900/40 border border-blue-500/30 text-blue-300 hover:bg-blue-800/60 hover:border-blue-400 transition-all text-sm tracking-widest font-bold w-full"
+              >
+                收攏星象
               </button>
             </div>
           </div>
