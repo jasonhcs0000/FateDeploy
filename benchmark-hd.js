@@ -32,10 +32,10 @@ Object.entries(profileCount).sort((a,b) => b[1] - a[1]).forEach(([k, v]) => {
 
 // Test Specific Resonance
 console.log("\n[特定共振測試]");
-const r1 = calculateFullFate('1999-04-03', 'parse', 0); // known heavy bazi 7.1
-console.log(`Test Heavy Bazi (7.1兩): HD Type = ${r1.humanDesign.typeData.type}`);
+const r1 = calculateFullFate('1980-08-08', 'parse', 0); // known projector
+console.log(`Test 1980-08-08 (Projector + Heavy Bazi): HD Type = ${r1.humanDesign.typeData.type}, Weight = ${r1.bazi.weightNum}`);
 if (r1.humanDesign.warning) console.log(`Warning: ${r1.humanDesign.warning}`);
 
-const r2 = calculateFullFate('2000-01-01', 'parse', 0);
-console.log(`Test 2000-01-01 (Four Cardinals?): HD Type = ${r2.humanDesign.typeData.type}`);
-if (r2.humanDesign.warning) console.log(`Warning: ${r2.humanDesign.warning}`);
+const r3 = calculateFullFate('1990-01-02', 'parse', 0);
+console.log(`Test 1990-01-02 (Manifestor + Light Bazi): HD Type = ${r3.humanDesign.typeData.type}`);
+if (r3.humanDesign.warning) console.log(`Warning: ${r3.humanDesign.warning}`);
