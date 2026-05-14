@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@oshimishi/dreamspell-math": "^0.3.2",
     "astronomy-engine": "^2.1.19",
     "date-fns": "^4.1.0",
     "ephemeris": "^2.2.0",

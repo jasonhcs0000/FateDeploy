@@ -139,11 +139,21 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const tarot = tarotCards[finalLifePath % tarotCards.length];
 
   // 5. Authentic Mayan Tzolkin Dreamspell (瑪雅曆)
-  // Kin Epoch logic: base Kin calculated via standard Julian Day modulus
   const jd = Math.floor(solar.getJulianDay());
-  const dreamspellEpochKin = 160; 
-  const dreamspellEpochJD = 2412114; 
-  let kin = ((jd - dreamspellEpochJD + dreamspellEpochKin) % 260) + 1;
+  const y = solar.getYear();
+  let m = solar.getMonth();
+  let d = solar.getDay();
+  if (m === 2 && d === 29) d = 28;
+  let dy = y;
+  if (m < 7 || (m === 7 && d < 26)) dy = y - 1;
+  let baseKin = (34 + (dy - 1987) * 105) % 260;
+  if (baseKin <= 0) baseKin = (baseKin % 260) + 260;
+  const md = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  let days = 0;
+  if (m === 7) { days = d - 26; }
+  else if (m > 7) { days = 31 - 26; for (let i = 8; i < m; i++) days += md[i]; days += d; }
+  else { days = 31 - 26 + 31 + 30 + 31 + 30 + 31; for (let i = 1; i < m; i++) days += md[i]; days += d; }
+  let kin = (baseKin + days) % 260;
   if (kin <= 0) kin += 260;
   
   const totemData = MAYAN_TOTEMS[(kin - 1) % 20];

@@ -1,0 +1,1 @@
+const { Solar } = require('lunar-typescript'); const dates = [[2026,5,20],[1989,3,6],[2000,1,1],[2012,12,21],[2024,2,10]]; dates.forEach(d => { const jd = Math.floor(Solar.fromYmd(d[0],d[1],d[2]).getJulianDay()); let diff = (jd - 2456109) % 260; if(diff<0) diff+=260; let kin = diff + 1; console.log(d.join('-') + ' -> ' + kin); });  
