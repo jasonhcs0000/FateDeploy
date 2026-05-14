@@ -27,6 +27,57 @@ const GENERATES: Record<string, string> = { 木:'火', 火:'土', 土:'金', 金
 const CONTROLS:  Record<string, string> = { 木:'土', 土:'水', 水:'火', 火:'金', 金:'木' };
 
 // ============================================================
+// 旺相休囚死 — 五行氣象引擎
+// ============================================================
+
+export type ElementStatus = '旺' | '相' | '休' | '囚' | '死';
+
+// 月支 → 當令五行（月令）
+const MONTH_ZHI_RULER: Record<string, string> = {
+  寅:'木', 卯:'木',
+  巳:'火', 午:'火',
+  辰:'土', 戌:'土', 丑:'土', 未:'土',
+  申:'金', 酉:'金',
+  亥:'水', 子:'水',
+};
+
+// 旺相休囚死對照表
+// key = 當令之元素，value = 各五行的狀態
+// 規則：
+//   旺 = 當令者本身
+//   相 = 旺者所生者（子當令，父輔佐）
+//   休 = 生旺者者（功成身退之父母）
+//   囚 = 剋旺者者（剋不動當令，身陷囹圄）
+//   死 = 旺者所剋者（被踩在腳下，毫無生氣）
+const STATUS_TABLE: Record<string, Record<string, ElementStatus>> = {
+  木: { 木:'旺', 火:'相', 水:'休', 金:'囚', 土:'死' },
+  火: { 火:'旺', 土:'相', 木:'休', 水:'囚', 金:'死' },
+  土: { 土:'旺', 金:'相', 火:'休', 木:'囚', 水:'死' },
+  金: { 金:'旺', 水:'相', 土:'休', 火:'囚', 木:'死' },
+  水: { 水:'旺', 木:'相', 金:'休', 土:'囚', 火:'死' },
+};
+
+/** 古法短評：五種氣象狀態的「老祖宗診斷語」 */
+export const STATUS_FLAVOR: Record<ElementStatus, { label: string; desc: string; glow: boolean }> = {
+  旺: { label: '旺', desc: '秉權當令，氣勢磅礡，為命局核心。此氣正值盛時，萬象以之為主。', glow: true  },
+  相: { label: '相', desc: '次旺之氣，生助有情，輔佐主事。如股肱之臣，得力而稱職。',   glow: false },
+  休: { label: '休', desc: '功成身退，能量收斂，宜靜不宜動。如父母已養育子女，此時安享清福。', glow: false },
+  囚: { label: '囚', desc: '氣息受阻，施展不開，力量被當令之氣壓制。如囚犯，雖有力量，難以發揮。', glow: false },
+  死: { label: '死', desc: '氣息全無，衰敗之極，被當令之氣徹底剋制。此時補救最為迫切。',   glow: false },
+};
+
+/**
+ * 取得某五行在特定月令下的「旺相休囚死」狀態
+ * @param element 要判斷的五行（木火土金水）
+ * @param monthZhi 月支（如卯、午、申等）
+ */
+export function getFiveElementStatus(element: string, monthZhi: string): ElementStatus {
+  const ruler = MONTH_ZHI_RULER[monthZhi];
+  if (!ruler) return '休'; // 未知月支，保守返回休
+  return STATUS_TABLE[ruler]?.[element] ?? '休';
+}
+
+// ============================================================
 // 2. 十神演算
 // ============================================================
 
@@ -63,10 +114,12 @@ function getTenGod(dmGan: string, targetChar: string, isStem: boolean): TenGod |
 export interface BaziMatrix {
   dayMaster: string;
   dayMasterElement: string;
-  elements: Record<string, number>;       // 百分比 0-100
+  monthZhi: string;                          // 月支（判定旺相休囚死的基準）
+  elements: Record<string, number>;          // 百分比 0-100
+  elementStatus: Record<string, ElementStatus>; // 旺相休囚死狀態
   rawScores: Record<string, number>;
   strength: 'strong' | 'weak' | 'neutral';
-  strengthScore: number;                   // 身強組佔比 0-100
+  strengthScore: number;
   tenGods: Array<{ char: string; god: TenGod | null; pillar: string }>;
   tenGodSummary: Partial<Record<TenGod, number>>;
   pattern: string;
@@ -109,6 +162,15 @@ export function analyzeBazi(
 
   const dayMasterGan = dayPillar[0];
   const dayMasterElement = GAN_ELEMENT[dayMasterGan] || '土';
+  const monthZhi = monthPillar[1]; // 月支，旺相休囚死的基準
+
+  // 計算旺相休囚死
+  const ELEMENTS = ['木','火','土','金','水'];
+  const elementStatus: Record<string, ElementStatus> = {};
+  for (const el of ELEMENTS) {
+    elementStatus[el] = getFiveElementStatus(el, monthZhi);
+  }
+  log.push(`月令「${monthZhi}」氣象：${ELEMENTS.map(el => `${el}【${elementStatus[el]}】`).join(' ')}`);
 
   // 計算原始分數
   const rawScores: Record<string, number> = { 木:0, 火:0, 土:0, 金:0, 水:0 };
@@ -220,7 +282,9 @@ export function analyzeBazi(
   return {
     dayMaster: dayMasterGan,
     dayMasterElement,
+    monthZhi,
     elements,
+    elementStatus,
     rawScores,
     strength,
     strengthScore: parseFloat(strengthScore.toFixed(1)),

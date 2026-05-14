@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X, Settings, Hexagon } from 'lucide-react';
 import { calculateFullFate, searchGoldenNodes } from '@/lib/fateLogic';
 import { CyberDatePicker } from '@/components/CyberDatePicker';
+import { STATUS_FLAVOR } from '@/lib/baziLogic';
 
 export default function Home() {
   const [conceptionDate, setConceptionDate] = useState('2026-05-20');
@@ -587,41 +588,68 @@ export default function Home() {
                         const { x, y } = toXY(angles[i], maxR * pct);
                         return <circle key={el} cx={x} cy={y} r="3" fill={EL_COLORS[el]} opacity="0.9" />;
                       })}
-                      {/* Labels */}
+                      {/* Labels — 五行名稱 + 旺相休囚死標簽 */}
                       {ELS.map((el, i) => {
                         const { x, y } = toXY(angles[i], maxR + 18);
-                        const val = m.elements[el] || 0;
+                        const status = m.elementStatus?.[el];
+                        const isWang = status === '旺';
                         return (
                           <g key={el}>
-                            <text x={x} y={y - 2} textAnchor="middle" fill={EL_COLORS[el]} fontSize="13" fontWeight="bold">{el}</text>
-                            <text x={x} y={y + 11} textAnchor="middle" fill={EL_COLORS[el]} fontSize="9" opacity="0.7">{val.toFixed(0)}%</text>
+                            <text x={x} y={y - 2} textAnchor="middle" fill={EL_COLORS[el]} fontSize="13" fontWeight="bold"
+                              filter={isWang ? `drop-shadow(0 0 4px ${EL_COLORS[el]})` : undefined}>{el}</text>
+                            <text x={x} y={y + 11} textAnchor="middle" fill={isWang ? EL_COLORS[el] : 'rgba(234,179,8,0.45)'} fontSize="9" fontWeight={isWang ? 'bold' : 'normal'}>【{status}】</text>
                           </g>
                         );
                       })}
                     </svg>
                   </div>
 
-                  {/* Element bars */}
+                  {/* 古法氣象表 — 旺相休囚死 */}
                   <div className="flex-1 space-y-2">
+                    <div className="text-[10px] tracking-[0.3em] text-yellow-500/50 mb-2">月令「{m.monthZhi}」氣象判斷</div>
                     {ELS.map(el => {
+                      const status = m.elementStatus?.[el];
+                      const flavor = STATUS_FLAVOR[status as keyof typeof STATUS_FLAVOR];
                       const val = m.elements[el] || 0;
+                      const isWang = status === '旺';
+                      const statusColors: Record<string,string> = {
+                        '旺':'text-yellow-300', '相':'text-cyan-300', '休':'text-slate-400',
+                        '囚':'text-purple-400', '死':'text-red-400/70'
+                      };
+                      const barColors: Record<string,string> = {
+                        '旺':EL_COLORS[el], '相':'rgba(34,211,238,0.6)', '休':'rgba(148,163,184,0.4)',
+                        '囚':'rgba(167,139,250,0.4)', '死':'rgba(248,113,113,0.3)'
+                      };
                       return (
                         <div key={el} className="space-y-0.5">
-                          <div className="flex justify-between text-[10px]">
-                            <span style={{ color: EL_COLORS[el] }}>{el}</span>
-                            <span className="text-yellow-400/50">{val.toFixed(1)}%</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-bold" style={{ color: EL_COLORS[el], textShadow: isWang ? `0 0 8px ${EL_COLORS[el]}` : 'none' }}>{el}</span>
+                              <span className={`text-[10px] font-bold font-serif ${statusColors[status] || 'text-yellow-400/50'} border border-current/30 px-1 leading-tight`}
+                                style={{ textShadow: isWang ? `0 0 6px currentColor` : 'none' }}>
+                                {status}
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-yellow-400/40">{val.toFixed(0)}%</span>
                           </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-700"
-                              style={{ width: `${val}%`, backgroundColor: EL_COLORS[el], opacity: 0.8 }}
+                              style={{
+                                width: `${val}%`,
+                                backgroundColor: barColors[status] || EL_COLORS[el],
+                                boxShadow: isWang ? `0 0 6px ${EL_COLORS[el]}` : 'none'
+                              }}
                             />
                           </div>
+                          {isWang && (
+                            <div className="text-[9px] text-yellow-300/60 leading-tight">{flavor?.desc.substring(0,22)}…</div>
+                          )}
                         </div>
                       );
                     })}
-                    <div className="pt-2 text-[10px] text-yellow-500/40 leading-relaxed border-t border-yellow-500/10">
-                      月令加權×2.8｜天干×1.2｜地支×1.0
+                    <div className="pt-1.5 text-[9px] text-yellow-500/30 border-t border-yellow-500/10">
+                      木旺寥卯·火旺巳午·土旺辰戌丑未·金旺申酉·水旺亥子
                     </div>
                   </div>
                 </div>
