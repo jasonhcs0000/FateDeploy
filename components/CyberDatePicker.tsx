@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { format, addMonths, subMonths, addYears, subYears, getDaysInMonth, startOfMonth, getDay, isSameDay, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
+import { format, addMonths, subMonths, addYears, subYears, setYear, setMonth, getDaysInMonth, startOfMonth, getDay, isSameDay, parseISO } from 'date-fns';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 interface CyberDatePickerProps {
   value: string; // YYYY-MM-DD
@@ -11,6 +11,7 @@ interface CyberDatePickerProps {
 
 export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChange, className, themeColor = 'indigo' }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState<'days' | 'months' | 'years'>('days');
   const [currentMonth, setCurrentMonth] = useState(parseISO(value || new Date().toISOString().split('T')[0]));
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -27,20 +28,27 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
 
   const daysInMonth = getDaysInMonth(currentMonth);
   const firstDayOfMonth = getDay(startOfMonth(currentMonth));
-  
-  const handlePrevMonth = (e: React.MouseEvent) => {
+  const currentYear = currentMonth.getFullYear();
+  const startDecadeYear = Math.floor(currentYear / 10) * 10;
+  const decadeYears = Array.from({ length: 12 }, (_, i) => startDecadeYear - 1 + i);
+  const monthsList = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+  const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentMonth(subMonths(currentMonth, 1));
+    if (view === 'days') setCurrentMonth(subMonths(currentMonth, 1));
+    else if (view === 'months') setCurrentMonth(subYears(currentMonth, 1));
+    else if (view === 'years') setCurrentMonth(subYears(currentMonth, 10));
   };
   
-  const handleNextMonth = (e: React.MouseEvent) => {
+  const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentMonth(addMonths(currentMonth, 1));
+    if (view === 'days') setCurrentMonth(addMonths(currentMonth, 1));
+    else if (view === 'months') setCurrentMonth(addYears(currentMonth, 1));
+    else if (view === 'years') setCurrentMonth(addYears(currentMonth, 10));
   };
 
   const handleDateClick = (day: number) => {
     const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    // Format keeping local timezone (date-fns format is local)
     const formattedDate = format(newDate, 'yyyy-MM-dd');
     onChange(formattedDate);
     setIsOpen(false);
@@ -51,6 +59,11 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
     onChange(format(today, 'yyyy-MM-dd'));
     setCurrentMonth(today);
     setIsOpen(false);
+  };
+
+  const openPicker = () => {
+    if (!isOpen) setView('days');
+    setIsOpen(!isOpen);
   };
 
   const activeDateObj = parseISO(value);
@@ -66,7 +79,7 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
       {/* Input Field replacing native date picker */}
       <button 
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={openPicker}
         className={`flex items-center justify-between min-w-[220px] bg-black/60 border rounded-sm px-6 py-4 text-2xl outline-none focus:ring-2 ${ringColor} ${shadowColor} ${borderColor} ${textColor} transition-all font-mono tracking-[0.1em] ${className}`}
       >
         <span>{value}</span>
@@ -82,94 +95,116 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
           <div className="relative z-10">
             {/* Header */}
             <div className={`flex justify-between items-center mb-6 ${isRed ? 'text-red-200' : 'text-indigo-200'}`}>
-              <button type="button" onClick={handlePrevMonth} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronLeft size={24} /></button>
+              <button type="button" onClick={handlePrev} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronLeft size={24} /></button>
               
-              <div className="flex items-center gap-4 text-xl font-bold tracking-widest font-[family-name:var(--font-noto-serif-tc)]">
+              <div className="flex items-center gap-2 text-xl font-bold tracking-widest font-[family-name:var(--font-noto-serif-tc)]">
                 
-                {/* Year Wheel */}
-                <div className="flex flex-col items-center group -my-2">
-                  <ChevronUp 
-                    className="w-4 h-4 cursor-pointer text-indigo-500/50 hover:text-purple-400 transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); setCurrentMonth(prev => addYears(prev, 1)); }} 
-                  />
-                  <div 
-                    className="cursor-ns-resize hover:text-purple-300 transition-colors px-1"
-                    onWheel={(e) => {
-                      if (e.deltaY < 0) setCurrentMonth(prev => addYears(prev, 1));
-                      else setCurrentMonth(prev => subYears(prev, 1));
-                    }}
-                    title="點擊箭頭或滾動切換年份"
-                  >
-                    {format(currentMonth, 'yyyy')} 年
-                  </div>
-                  <ChevronDown 
-                    className="w-4 h-4 cursor-pointer text-indigo-500/50 hover:text-purple-400 transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); setCurrentMonth(prev => subYears(prev, 1)); }} 
-                  />
-                </div>
+                {view === 'days' && (
+                  <>
+                    <button type="button" onClick={() => setView('years')} className="hover:text-purple-300 hover:bg-white/5 rounded px-2 py-1 transition-colors" title="切換至年份選擇">
+                      {format(currentMonth, 'yyyy')} 年
+                    </button>
+                    <button type="button" onClick={() => setView('months')} className="hover:text-purple-300 hover:bg-white/5 rounded px-2 py-1 transition-colors" title="切換至月份選擇">
+                      {format(currentMonth, 'MM')} 月
+                    </button>
+                  </>
+                )}
 
-                {/* Month Wheel */}
-                <div className="flex flex-col items-center group -my-2">
-                  <ChevronUp 
-                    className="w-4 h-4 cursor-pointer text-indigo-500/50 hover:text-purple-400 transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); setCurrentMonth(prev => addMonths(prev, 1)); }} 
-                  />
-                  <div 
-                    className="cursor-ns-resize hover:text-purple-300 transition-colors px-1"
-                    onWheel={(e) => {
-                      if (e.deltaY < 0) setCurrentMonth(prev => addMonths(prev, 1));
-                      else setCurrentMonth(prev => subMonths(prev, 1));
-                    }}
-                    title="點擊箭頭或滾動切換月份"
-                  >
-                    {format(currentMonth, 'MM')} 月
+                {view === 'months' && (
+                  <button type="button" onClick={() => setView('years')} className="hover:text-purple-300 hover:bg-white/5 rounded px-2 py-1 transition-colors" title="切換至年份選擇">
+                    {format(currentMonth, 'yyyy')} 年
+                  </button>
+                )}
+
+                {view === 'years' && (
+                  <div className="px-2 py-1 tracking-widest">
+                    {startDecadeYear} - {startDecadeYear + 9}
                   </div>
-                  <ChevronDown 
-                    className="w-4 h-4 cursor-pointer text-indigo-500/50 hover:text-purple-400 transition-colors" 
-                    onClick={(e) => { e.stopPropagation(); setCurrentMonth(prev => subMonths(prev, 1)); }} 
-                  />
-                </div>
+                )}
 
               </div>
 
-              <button type="button" onClick={handleNextMonth} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronRight size={24} /></button>
-            </div>
-
-            {/* Weekdays */}
-            <div className="grid grid-cols-7 gap-1 mb-3">
-              {['日', '一', '二', '三', '四', '五', '六'].map(day => (
-                <div key={day} className="text-center text-xs text-gray-500 font-bold py-1">
-                  {day}
-                </div>
-              ))}
+              <button type="button" onClick={handleNext} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronRight size={24} /></button>
             </div>
 
             {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-1 mb-4">
-              {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                <div key={`empty-${i}`} />
-              ))}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
-                const isSelected = isSameDay(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day), activeDateObj);
-                
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => handleDateClick(day)}
-                    className={`
-                      h-10 w-full flex items-center justify-center rounded-sm text-sm font-mono transition-all duration-500
-                      ${isSelected 
-                        ? `bg-purple-600/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.9)] animate-pulse border border-purple-400` 
-                        : `text-gray-300 hover:bg-indigo-900/50 hover:text-indigo-200 border border-transparent`}
-                    `}
-                  >
-                    {day}
-                  </button>
-                );
-              })}
-            </div>
+            {view === 'days' && (
+              <>
+                <div className="grid grid-cols-7 gap-1 mb-3">
+                  {['日', '一', '二', '三', '四', '五', '六'].map(day => (
+                    <div key={day} className="text-center text-xs text-gray-500 font-bold py-1">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1 mb-4">
+                  {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                    <div key={`empty-${i}`} />
+                  ))}
+                  {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const day = i + 1;
+                    const isSelected = isSameDay(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day), activeDateObj);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => handleDateClick(day)}
+                        className={`
+                          h-10 w-full flex items-center justify-center rounded-sm text-sm font-mono transition-all duration-500
+                          ${isSelected 
+                            ? `bg-purple-600/90 text-white shadow-[0_0_20px_rgba(147,51,234,0.9)] animate-pulse border border-purple-400` 
+                            : `text-gray-300 hover:bg-indigo-900/50 hover:text-indigo-200 border border-transparent`}
+                        `}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Months Grid */}
+            {view === 'months' && (
+              <div className="grid grid-cols-3 gap-3 mb-4 h-[240px] items-center">
+                {monthsList.map((m, i) => {
+                  const isCurrentMonth = currentMonth.getMonth() === i;
+                  return (
+                    <button
+                      key={m} type="button"
+                      onClick={() => {
+                        setCurrentMonth(setMonth(currentMonth, i));
+                        setView('days');
+                      }}
+                      className={`h-12 w-full flex items-center justify-center rounded-sm text-sm font-[family-name:var(--font-noto-serif-tc)] tracking-widest transition-all duration-300 ${isCurrentMonth ? 'text-purple-300 border border-purple-500/50 bg-purple-900/20' : 'text-gray-300 hover:bg-indigo-900/50 hover:text-indigo-200 border border-transparent'}`}
+                    >
+                      {m}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Years Grid */}
+            {view === 'years' && (
+              <div className="grid grid-cols-3 gap-3 mb-4 h-[240px] items-center">
+                {decadeYears.map((y) => {
+                  const isOut = y < startDecadeYear || y > startDecadeYear + 9;
+                  return (
+                    <button
+                      key={y} type="button"
+                      onClick={() => {
+                        setCurrentMonth(setYear(currentMonth, y));
+                        setView('months');
+                      }}
+                      className={`h-12 w-full flex items-center justify-center rounded-sm text-base font-mono transition-all duration-300 ${y === currentYear ? 'text-purple-300 border border-purple-500/50 bg-purple-900/20' : 'text-gray-300 hover:bg-indigo-900/50 hover:text-indigo-200 border border-transparent'} ${isOut ? 'opacity-30' : ''}`}
+                    >
+                      {y}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Footer Buttons */}
             <div className="flex justify-between mt-6 pt-4 border-t border-white/10 font-[family-name:var(--font-noto-serif-tc)] text-sm">
