@@ -3,7 +3,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 // @ts-ignore
 import * as ephemeris from 'ephemeris';
 
-import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA } from './weightData';
+import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS } from './weightData';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -146,10 +146,8 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   let kin = ((jd - dreamspellEpochJD + dreamspellEpochKin) % 260) + 1;
   if (kin <= 0) kin += 260;
   
-  const mayanTotems = ["紅龍", "白風", "藍夜", "黃種子", "紅蛇", "白世界橋", "藍手", "黃星", "紅月", "白狗", "藍猴", "黃人", "紅天行者", "白巫師", "藍鷹", "黃戰士", "紅地球", "白鏡", "藍風暴", "黃太陽"];
-  const mayanTones = ["磁性的", "月亮的", "電力的", "自我存在的", "超頻的", "韻律的", "共鳴的", "銀河的", "太陽的", "行星的", "光譜的", "水晶的", "宇宙的"];
-  const totem = mayanTotems[(kin - 1) % 20];
-  const tone = mayanTones[(kin - 1) % 13];
+  const totemData = MAYAN_TOTEMS[(kin - 1) % 20];
+  const tone = MAYAN_TONES[(kin - 1) % 13];
 
   // 6. Authentic Onomancy (姓名學 - 三合/六合 生肖)
   const rawZodiac = lunar.getYearShengXiao();
@@ -221,7 +219,7 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     ziwei: ziwei,
     humanDesign: { title: `${hdType} ${hdProfile}`, desc: "無窮能量，自帶解決問題的權威感。" },
     tarot: tarot,
-    mayan: { kin: `Kin ${kin}`, title: `${tone}${totem}`, desc: "代表生命的開創與滋養，天生具有強大的生命力。" },
+    mayan: { kin: `Kin ${kin}`, title: `${tone}${totemData.name}`, desc: totemData.desc },
     onomancy: { zodiac: zodiac, desc: onomancyDesc },
     astrology: { sabian: `${sign} ${signDegree}度`, desc: sabianDesc },
     iching: { hexagram: hexagramName, lines: lines, desc: ichingDesc }

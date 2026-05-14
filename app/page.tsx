@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X } from 'lucide-react';
+import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X, Settings } from 'lucide-react';
 import { calculateFullFate, searchGoldenNodes } from '@/lib/fateLogic';
 import { CyberDatePicker } from '@/components/CyberDatePicker';
 
@@ -197,7 +197,24 @@ export default function Home() {
             <SealedCard title="塔羅大運" icon={Moon} message="命運之輪轉動緩慢，未來牌陣待緣而開..." />
 
             {/* 5. Mayan Tzolkin */}
-            <SealedCard title="瑪雅曆法" icon={Compass} message="時空維度交錯，星系印記等待對齊..." />
+            <div className="glass-card p-6 relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500">
+              <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
+                <Settings className="w-[150%] h-[150%] text-purple-400 animate-spin" style={{ animationDuration: '60s' }} />
+              </div>
+              <Compass className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-purple-500" />
+              <h2 className="text-sm mb-4 flex items-center text-purple-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Compass className="w-4 h-4 mr-2" /> 瑪雅曆法
+              </h2>
+              <div className="text-xl font-bold mb-1 text-purple-300 tracking-wider font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                {fateData.mayan.title}
+              </div>
+              <div className="text-xs font-mono text-purple-400/60 mb-3 tracking-widest relative z-10">
+                {fateData.mayan.kin}
+              </div>
+              <p className="text-purple-100/80 text-sm tracking-wide leading-relaxed border-t border-purple-500/20 pt-3 relative z-10">
+                {fateData.mayan.desc}
+              </p>
+            </div>
 
             {/* 6. Onomancy (Kept functional as requested) */}
             <div className="glass-card p-6 relative overflow-hidden group hover:border-indigo-500/50 transition-all duration-500">
