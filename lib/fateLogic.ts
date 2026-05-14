@@ -126,10 +126,10 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const hdProfileData = HD_PROFILE_DICT[hdProfileKey];
   
   let hdWarning = "";
-  const yearZhi = bazi[1];
-  const monthZhi = bazi[3];
-  const dayZhi = bazi[5];
-  const hourZhi = bazi[7];
+  const yearZhi = bazi.getYearZhi();
+  const monthZhi = bazi.getMonthZhi();
+  const dayZhi = bazi.getDayZhi();
+  const hourZhi = bazi.getTimeZhi();
   
   // Resonance 1: Projector + Heavy Bazi
   if (hdTypeKey === "投射者" && weightNum >= 5.0) {
