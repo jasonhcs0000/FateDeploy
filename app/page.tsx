@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X } from 'lucide-react';
 import { calculateFullFate, searchGoldenNodes } from '@/lib/fateLogic';
+import { CyberDatePicker } from '@/components/CyberDatePicker';
 
 export default function Home() {
   const [conceptionDate, setConceptionDate] = useState('2026-05-20');
@@ -123,11 +124,11 @@ export default function Home() {
               <Database className="w-5 h-5 mr-3 opacity-60" /> {mode === 'parse' ? '定位命元降臨時刻' : '定位靈魂初始化時間點'}
             </label>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <input
-                type="date"
-                className={`bg-black/60 border rounded-sm px-6 py-4 text-2xl outline-none focus:ring-2 shadow-[inset_0_0_20px_rgba(79,70,229,0.2)] transition-all font-mono tracking-[0.1em] ${mode === 'parse' ? 'text-red-300 border-red-900/40 focus:ring-red-500 shadow-[inset_0_0_20px_rgba(153,27,27,0.2)]' : 'text-yellow-300 border-indigo-500/40 focus:ring-indigo-400'}`}
+              <CyberDatePicker
                 value={conceptionDate}
-                onChange={(e) => setConceptionDate(e.target.value)}
+                onChange={setConceptionDate}
+                themeColor={mode === 'parse' ? 'red' : 'indigo'}
+                className="w-full sm:w-auto"
               />
               {mode === 'parse' && (
                 <select 
