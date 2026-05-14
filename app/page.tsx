@@ -117,7 +117,7 @@ export default function Home() {
         </header>
 
         {/* Main Interaction */}
-        <div className={`bg-black/40 backdrop-blur-md p-10 mb-12 text-center max-w-2xl mx-auto border-x-4 border-double shadow-[0_0_40px_rgba(79,70,229,0.3)] relative group transition-colors duration-1000 ${mode === 'parse' ? 'border-red-900/50 shadow-[0_0_40px_rgba(153,27,27,0.3)]' : 'border-indigo-500/50'}`}>
+        <div className={`bg-black/40 backdrop-blur-md p-10 mb-12 text-center max-w-2xl mx-auto border-x-4 border-double shadow-[0_0_40px_rgba(79,70,229,0.3)] relative z-50 group transition-colors duration-1000 ${mode === 'parse' ? 'border-red-900/50 shadow-[0_0_40px_rgba(153,27,27,0.3)]' : 'border-indigo-500/50'}`}>
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
           <div className="relative z-10">
             <label className={`block text-xl mb-6 font-bold tracking-[0.2em] flex items-center justify-center font-[family-name:var(--font-noto-serif-tc)] transition-colors duration-1000 ${mode === 'parse' ? 'text-red-200' : 'text-indigo-200'}`}>
