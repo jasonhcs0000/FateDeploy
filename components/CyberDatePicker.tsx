@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { format, addMonths, subMonths, getDaysInMonth, startOfMonth, getDay, isSameDay, parseISO } from 'date-fns';
+import { format, addMonths, subMonths, addYears, subYears, getDaysInMonth, startOfMonth, getDay, isSameDay, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
 interface CyberDatePickerProps {
@@ -83,9 +83,31 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
             {/* Header */}
             <div className={`flex justify-between items-center mb-6 ${isRed ? 'text-red-200' : 'text-indigo-200'}`}>
               <button type="button" onClick={handlePrevMonth} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronLeft size={24} /></button>
-              <div className="text-xl font-bold tracking-widest font-[family-name:var(--font-noto-serif-tc)]">
-                {format(currentMonth, 'yyyy 年 MM 月')}
+              
+              <div className="flex items-center gap-1 text-xl font-bold tracking-widest font-[family-name:var(--font-noto-serif-tc)]">
+                <div 
+                  className="cursor-ns-resize hover:text-purple-300 hover:bg-white/5 rounded px-2 py-1 transition-colors"
+                  onWheel={(e) => {
+                    // Stop page from scrolling if possible (passive listener limits this, but we try)
+                    if (e.deltaY < 0) setCurrentMonth(prev => addYears(prev, 1));
+                    else setCurrentMonth(prev => subYears(prev, 1));
+                  }}
+                  title="上下滾動切換年份"
+                >
+                  {format(currentMonth, 'yyyy')} 年
+                </div>
+                <div 
+                  className="cursor-ns-resize hover:text-purple-300 hover:bg-white/5 rounded px-2 py-1 transition-colors"
+                  onWheel={(e) => {
+                    if (e.deltaY < 0) setCurrentMonth(prev => addMonths(prev, 1));
+                    else setCurrentMonth(prev => subMonths(prev, 1));
+                  }}
+                  title="上下滾動切換月份"
+                >
+                  {format(currentMonth, 'MM')} 月
+                </div>
               </div>
+
               <button type="button" onClick={handleNextMonth} className="p-1 hover:text-purple-400 hover:bg-white/5 rounded transition-colors"><ChevronRight size={24} /></button>
             </div>
 
