@@ -12,6 +12,7 @@ body {
   font-family: var(--font-sans);
   position: relative;
   overflow-x: hidden;
+  color-scheme: dark; /* 強制瀏覽器原生的 UI 元件（如日曆、捲軸）使用暗色主題 */
 }
 
 body::before {
@@ -80,6 +81,3 @@ input[type=date]::-webkit-calendar-picker-indicator {
   color: transparent;
 }
 
-input[type=date]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-}
