@@ -7,7 +7,7 @@ import { CyberDatePicker } from '@/components/CyberDatePicker';
 
 export default function Home() {
   const [conceptionDate, setConceptionDate] = useState('2026-05-20');
-  const [mode, setMode] = useState<'deploy' | 'parse'>('deploy');
+  const [mode, setMode] = useState<'deploy' | 'parse'>('parse');
   const [birthHour, setBirthHour] = useState<number>(0);
   const [fateData, setFateData] = useState<ReturnType<typeof calculateFullFate>>(null);
   const [isDecoding, setIsDecoding] = useState(false);
