@@ -58,3 +58,5 @@ export * from './data/mayanData';
 export * from './data/sabianData';
 export * from './data/tarotData';
 export * from './data/hdData';
+export { ICHING_DICT } from './data/ichingData';
+export { ZIWEI_DICT } from './data/ziweiData';

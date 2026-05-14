@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X, Settings } from 'lucide-react';
+import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen, Quote, Circle, Fingerprint, Database, Search, Lock, X, Settings, Hexagon } from 'lucide-react';
 import { calculateFullFate, searchGoldenNodes } from '@/lib/fateLogic';
 import { CyberDatePicker } from '@/components/CyberDatePicker';
 
@@ -20,6 +20,29 @@ export default function Home() {
   const [sabianPopup, setSabianPopup] = useState(false);
   const [tarotPopup, setTarotPopup] = useState(false);
   const [hdPopup, setHdPopup] = useState(false);
+  const [ichingPopup, setIchingPopup] = useState(false);
+  const [ziweiPopup, setZiweiPopup] = useState(false);
+
+  const HexagramVisual = ({ lines, size = 'sm' }: { lines: number[], size?: 'sm'|'lg' }) => {
+    const h = size === 'lg' ? 'h-2 mb-1.5' : 'h-1 mb-[2px]';
+    const w = size === 'lg' ? 'w-10' : 'w-6';
+    return (
+      <div className={`flex flex-col-reverse items-center ${w}`}>
+        {lines.map((l, i) => (
+          <div key={i} className={`flex w-full ${h} justify-between text-current`}>
+            {l === 1 ? (
+              <div className="w-full bg-current rounded-[1px]"></div>
+            ) : (
+              <>
+                <div className="w-[45%] bg-current rounded-[1px]"></div>
+                <div className="w-[45%] bg-current rounded-[1px]"></div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   const SealedCard = ({ title, icon: Icon, message }: { title: string, icon: any, message: string }) => (
     <div 
@@ -191,7 +214,23 @@ export default function Home() {
             </div>
 
             {/* 2. Zi Wei */}
-            <SealedCard title="紫微矩陣" icon={Star} message="星象觀測中，紫微斗數天機尚在編譯..." />
+            <div 
+              onClick={() => setZiweiPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-indigo-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <Star className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-indigo-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-indigo-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Star className="w-4 h-4 mr-2" /> 紫微矩陣
+              </h2>
+              <div className="text-3xl font-[family-name:var(--font-noto-serif-tc)] text-indigo-300 mb-2 drop-shadow-[0_0_8px_rgba(165,180,252,0.4)] metallic-gloss relative z-10">
+                {fateData.ziwei.star}
+              </div>
+              <div className="text-sm font-bold text-indigo-300/80 mb-3 tracking-widest relative z-10">命宮：{fateData.ziwei.mingGongZhi}</div>
+              <p className="text-indigo-200/80 text-sm tracking-wide leading-relaxed border-t border-indigo-500/20 pt-3 relative z-10 line-clamp-2">
+                {fateData.ziwei.data.destinyVibe}
+              </p>
+              <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/5 transition-colors duration-500"></div>
+            </div>
 
             {/* 3. Human Design */}
             <div 
@@ -284,7 +323,33 @@ export default function Home() {
             </div>
 
             {/* 8. I-Ching */}
-            <SealedCard title="易經卦象" icon={Scale} message="因緣未具，此卦象暫不可見。" />
+            <div 
+              onClick={() => setIchingPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-rose-500/50 transition-all duration-500 cursor-pointer active:scale-[0.98] active:border-rose-400"
+            >
+              <Hexagon className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-rose-500 group-hover:opacity-10 transition-opacity group-hover:animate-spin" style={{ animationDuration: '20s' }} />
+              <h2 className="text-sm mb-4 flex items-center text-rose-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Hexagon className="w-4 h-4 mr-2" /> 梅花易數
+              </h2>
+              <div className="flex items-end justify-between relative z-10 mb-2">
+                <div className="text-xl font-bold text-rose-300 tracking-wider font-[family-name:var(--font-noto-serif-tc)] drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]">
+                  {fateData.iching.transformedHexagram}
+                </div>
+                <div className="text-rose-400/60 pb-1">
+                  <HexagramVisual lines={fateData.iching.transformedLines} size="sm" />
+                </div>
+              </div>
+              <div className="text-xs font-mono text-rose-500/80 mb-3 tracking-widest relative z-10">
+                今日戰術：{fateData.iching.transformedData.strategy}
+              </div>
+              <p className="text-rose-100/80 text-sm tracking-wide leading-relaxed border-t border-rose-500/20 pt-3 relative z-10 line-clamp-2">
+                {fateData.iching.transformedData.hshBusinessAdvice}
+              </p>
+              {fateData.iching.warning && (
+                <div className="mt-2 w-2 h-2 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,1)] rounded-full animate-ping absolute bottom-4 right-4 z-10"></div>
+              )}
+              <div className="absolute inset-0 bg-rose-500/0 group-hover:bg-rose-500/5 transition-colors duration-500"></div>
+            </div>
 
           </div>
         )}
@@ -557,6 +622,108 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* IChing Deep Dive Modal */}
+      {ichingPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/80 backdrop-blur-md">
+          <div className="bg-[#0f0505] border border-rose-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(244,63,94,0.2)] overflow-hidden">
+            {/* Background Spinning Taiji */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+              <div className="text-[300px] leading-none animate-spin" style={{ animationDuration: '60s' }}>☯</div>
+            </div>
+
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-rose-400/50 m-2"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-rose-400/50 m-2"></div>
+            
+            <button 
+              onClick={() => setIchingPopup(false)}
+              className="absolute top-4 right-4 text-rose-400/60 hover:text-rose-300 transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-center mb-6">
+                <Hexagon className="w-8 h-8 text-rose-500 mr-3 opacity-80" />
+                <h3 className="text-2xl font-black text-rose-200 tracking-[0.3em] font-[family-name:var(--font-noto-serif-tc)] drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]">
+                  【梅花易數】
+                </h3>
+              </div>
+
+              <div className="flex justify-between items-center mb-6 px-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-rose-400/60 text-xs mb-2 tracking-widest">本卦</span>
+                  <div className="text-rose-500/80">
+                    <HexagramVisual lines={fateData.iching.originalLines} size="lg" />
+                  </div>
+                  <span className="text-rose-200 text-lg font-bold mt-2 font-[family-name:var(--font-noto-serif-tc)]">{fateData.iching.hexagram}</span>
+                </div>
+                
+                <div className="flex flex-col items-center text-rose-500/50 pt-4">
+                  <span className="text-[10px] tracking-widest mb-1 bg-rose-950/40 px-2 py-0.5 rounded-sm">動爻: {fateData.iching.changingLine}</span>
+                  <div className="w-16 border-t border-dashed border-rose-500/40 relative">
+                    <div className="absolute -right-1 -top-1.5 border-t-[6px] border-b-[6px] border-l-[8px] border-y-transparent border-l-rose-500/40"></div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <span className="text-rose-400/60 text-xs mb-2 tracking-widest">變卦</span>
+                  <div className="text-rose-400 drop-shadow-[0_0_5px_rgba(244,63,94,0.6)]">
+                    <HexagramVisual lines={fateData.iching.transformedLines} size="lg" />
+                  </div>
+                  <span className="text-rose-200 text-lg font-bold mt-2 font-[family-name:var(--font-noto-serif-tc)] drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]">{fateData.iching.transformedHexagram}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Strategy */}
+                <div className="bg-rose-950/20 p-4 border border-rose-500/20 border-l-2 border-l-rose-500 shadow-[inset_0_0_15px_rgba(225,29,72,0.05)]">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-400/90 mb-2 flex items-center">
+                    <span className="mr-2">🎯</span> 今日戰術 (STRATEGY)
+                  </h4>
+                  <p className="text-rose-100/90 tracking-wide leading-relaxed text-sm font-bold">
+                    {fateData.iching.transformedData.strategy}
+                  </p>
+                </div>
+                
+                {/* Warning */}
+                <div className="bg-rose-950/20 p-4 border border-rose-500/20 border-l-2 border-l-rose-700 shadow-[inset_0_0_15px_rgba(225,29,72,0.05)]">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-500 mb-2 flex items-center">
+                    <span className="mr-2">⚠️</span> 風險提示 (WARNING)
+                  </h4>
+                  <p className="text-rose-200/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.iching.transformedData.warning}
+                  </p>
+                </div>
+                
+                {/* HSH Advice */}
+                <div className="bg-rose-950/10 p-4 border border-rose-500/10">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-400/60 mb-2">事業與空間 (BUSINESS & SPACE)</h4>
+                  <p className="text-rose-200/80 tracking-wide leading-relaxed text-sm">
+                    {fateData.iching.transformedData.hshBusinessAdvice}
+                  </p>
+                </div>
+
+                {/* Resonance Warning */}
+                {fateData.iching.warning && (
+                  <div className="mt-2 p-3 bg-rose-950/60 border border-rose-500/50 rounded-sm flex items-start animate-pulse shadow-[0_0_15px_rgba(225,29,72,0.3)]">
+                    <p className="text-rose-200 tracking-wide text-xs leading-relaxed font-bold">
+                      {fateData.iching.warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={() => setIchingPopup(false)}
+                className="mt-6 px-8 py-3 bg-rose-900/20 border border-rose-500/30 text-rose-500 hover:bg-rose-900/40 hover:border-rose-400 transition-all text-sm tracking-widest font-bold w-full"
+              >
+                關閉戰術面板
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <style jsx global>{`
         @keyframes fadeInUp {
@@ -574,6 +741,95 @@ export default function Home() {
           animation: fadeIn 1s ease-out forwards;
         }
       `}</style>
+      {/* Zi Wei Dou Shu Modal */}
+      {ziweiPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/90 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#050510] border border-indigo-500/40 p-8 max-w-lg w-full relative shadow-[0_0_80px_rgba(99,102,241,0.2)] overflow-hidden animate-scale-up">
+            {/* Spinning Twelve Houses Watermark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none" style={{ animation: 'spin 120s linear infinite' }}>
+              <div className="w-[600px] h-[600px] border-[1px] border-indigo-400 rounded-full flex items-center justify-center relative">
+                {Array.from({length: 12}).map((_, i) => (
+                  <div key={i} className="absolute w-[600px] h-[1px] bg-indigo-400" style={{ transform: `rotate(${i * 30}deg)` }}></div>
+                ))}
+                <div className="w-[300px] h-[300px] border-[1px] border-indigo-400 rounded-full absolute"></div>
+              </div>
+            </div>
+
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-indigo-500/50 m-2"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-indigo-500/50 m-2"></div>
+            
+            <button 
+              onClick={() => setZiweiPopup(false)}
+              className="absolute top-4 right-4 text-indigo-500/60 hover:text-indigo-400 transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
+              <div className="text-indigo-500 mb-2 tracking-[0.3em] text-xs font-sans">ZI WEI DOU SHU MATRIX</div>
+              <h3 className="text-4xl font-black text-indigo-300 mb-2 tracking-[0.2em] drop-shadow-[0_0_15px_rgba(165,180,252,0.6)]">
+                {fateData.ziwei.star}
+              </h3>
+              <div className="text-sm font-bold tracking-widest text-indigo-400/80 mb-6 border-b border-indigo-500/20 pb-2 px-8">
+                命宮位置：{fateData.ziwei.mingGongZhi}
+              </div>
+              
+              <div className="text-left space-y-4 w-full">
+                {/* 1. Destiny Vibe */}
+                <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">命格氣場 (DESTINY VIBE)</h4>
+                  <p className="text-indigo-200 tracking-wide leading-relaxed text-sm font-bold">
+                    {fateData.ziwei.data.destinyVibe}
+                  </p>
+                </div>
+
+                {/* 2. Core Strength */}
+                <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">核心競爭力 (CORE STRENGTH)</h4>
+                  <p className="text-indigo-100/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.ziwei.data.coreStrength}
+                  </p>
+                </div>
+                
+                {/* 3. Life Challenge */}
+                <div className="bg-rose-950/20 p-4 border border-rose-500/30 border-l-2 border-l-rose-500 shadow-[inset_0_0_15px_rgba(225,29,72,0.05)]">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-rose-400/90 mb-2 flex items-center">
+                    <span className="mr-2">⚔️</span> 人生絆腳石 (LIFE CHALLENGE)
+                  </h4>
+                  <p className="text-rose-200/90 tracking-wide leading-relaxed text-sm font-medium">
+                    {fateData.ziwei.data.lifeChallenge}
+                  </p>
+                </div>
+                
+                {/* 4. HSH Fortune Advice */}
+                <div className="bg-amber-950/20 p-4 border border-amber-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-amber-500/80 mb-2">營運戰略建議 (HSH FORTUNE ADVICE)</h4>
+                  <p className="text-amber-200 tracking-wide leading-relaxed text-sm">
+                    {fateData.ziwei.data.hshFortuneAdvice}
+                  </p>
+                </div>
+
+                {/* 5. Resonance Warning */}
+                {fateData.ziwei.warning && (
+                  <div className="mt-2 p-3 bg-red-950/60 border border-red-500/50 rounded-sm flex items-start animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.3)]">
+                    <p className="text-red-200 tracking-wide text-sm leading-relaxed font-bold">
+                      {fateData.ziwei.warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={() => setZiweiPopup(false)}
+                className="mt-6 px-8 py-3 bg-indigo-900/20 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40 hover:border-indigo-400 transition-all text-sm tracking-widest font-bold w-full"
+              >
+                收攏星盤
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
