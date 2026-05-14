@@ -5,6 +5,7 @@ import * as ephemeris from 'ephemeris';
 
 import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT, HD_TYPE_DICT, HD_PROFILE_DICT, ICHING_DICT, ZIWEI_DICT } from './weightData';
 import { getHumanDesign } from './humanDesignLogic';
+import { analyzeBazi } from './baziLogic';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -97,6 +98,16 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
     baziProphecy = "天選命格，紫氣東來，非富即貴。 (黃金天命期)";
   }
   const naYin = bazi.getYearNaYin() || lunar.getDayNaYin();
+
+  // 1b. 八字五行矩陣引擎
+  const baziDebugLog: string[] = [];
+  const baziMatrix = analyzeBazi(
+    bazi.getYear(),   // 年柱 (e.g. "壬戌")
+    bazi.getMonth(),  // 月柱
+    bazi.getDay(),    // 日柱
+    bazi.getTime(),   // 時柱
+    baziDebugLog
+  );
 
   // 2. Zi Wei Dou Shu
   const mingGong = bazi.getMingGong();
@@ -337,7 +348,8 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
       baziStr: `${bazi.getYear()} ${bazi.getMonth()} ${bazi.getDay()} ${bazi.getTime()}`,
       weightStr: `${Math.floor(weightNum)}兩${Math.round((weightNum % 1) * 10)}錢`, 
       desc: baziProphecy,
-      missingElements: missingElements
+      missingElements: missingElements,
+      matrix: baziMatrix,
     },
     ziwei: { star: primaryStar, data: ziweiDataObj, warning: ziweiWarning, mingGongZhi },
     humanDesign: { 

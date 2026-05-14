@@ -22,6 +22,7 @@ export default function Home() {
   const [hdPopup, setHdPopup] = useState(false);
   const [ichingPopup, setIchingPopup] = useState(false);
   const [ziweiPopup, setZiweiPopup] = useState(false);
+  const [baziPopup, setBaziPopup] = useState(false);
 
   const HexagramVisual = ({ lines, size = 'sm' }: { lines: number[], size?: 'sm'|'lg' }) => {
     const h = size === 'lg' ? 'h-2 mb-1.5' : 'h-1 mb-[2px]';
@@ -203,14 +204,36 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 animate-fade-in">
             
             {/* 1. Bazi */}
-            <div className="glass-card p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all duration-500">
-              <Scale className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-yellow-500" />
-              <h2 className="text-sm mb-4 flex items-center text-yellow-500/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
+            <div
+              onClick={() => setBaziPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <Scale className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-yellow-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-yellow-500/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
                 <Scale className="w-4 h-4 mr-2" /> 八字架構
               </h2>
-              <div className="text-3xl font-[family-name:var(--font-noto-serif-tc)] text-yellow-400 mb-2 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)] metallic-gloss">{fateData.bazi.weightStr}</div>
-              <div className="text-sm font-bold text-yellow-300/80 mb-3 tracking-widest">{fateData.bazi.baziStr}</div>
-              <p className="text-yellow-100/80 text-sm tracking-wide leading-relaxed border-t border-yellow-500/20 pt-3">{fateData.bazi.desc}</p>
+              <div className="text-3xl font-[family-name:var(--font-noto-serif-tc)] text-yellow-400 mb-2 drop-shadow-[0_0_8px_rgba(234,179,8,0.4)] metallic-gloss relative z-10">{fateData.bazi.weightStr}</div>
+              <div className="text-sm font-bold text-yellow-300/80 mb-3 tracking-widest relative z-10">{fateData.bazi.baziStr}</div>
+              <p className="text-yellow-100/80 text-sm tracking-wide leading-relaxed border-t border-yellow-500/20 pt-3 relative z-10 line-clamp-2">{fateData.bazi.desc}</p>
+              {/* 五行能量條 */}
+              {fateData.bazi.matrix && (
+                <div className="mt-3 space-y-1 relative z-10">
+                  {(['木','火','土','金','水'] as const).map(el => {
+                    const colors: Record<string,string> = { 木:'bg-green-400', 火:'bg-orange-400', 土:'bg-amber-400', 金:'bg-slate-300', 水:'bg-cyan-400' };
+                    const val = fateData.bazi.matrix!.elements[el] || 0;
+                    return (
+                      <div key={el} className="flex items-center gap-1.5">
+                        <span className="text-[9px] text-yellow-500/60 w-3">{el}</span>
+                        <div className="flex-1 h-[3px] bg-white/5 rounded-full overflow-hidden">
+                          <div className={`h-full ${colors[el]} rounded-full transition-all duration-700`} style={{ width: `${val}%` }} />
+                        </div>
+                        <span className="text-[9px] text-yellow-400/50 w-7 text-right">{val.toFixed(0)}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-yellow-500/0 group-hover:bg-yellow-500/5 transition-colors duration-500" />
             </div>
 
             {/* 2. Zi Wei */}
@@ -472,8 +495,192 @@ export default function Home() {
         </div>
       )}
 
+      {/* Bazi Matrix Deep Dive Modal */}
+      {baziPopup && fateData?.bazi.matrix && (() => {
+        const m = fateData.bazi.matrix!;
+        const ELS = ['木','火','土','金','水'] as const;
+        const EL_COLORS: Record<string,string> = { 木:'#4ade80', 火:'#f97316', 土:'#f59e0b', 金:'#94a3b8', 水:'#22d3ee' };
+        const EL_FILL:   Record<string,string> = { 木:'rgba(74,222,128,0.15)', 火:'rgba(249,115,22,0.15)', 土:'rgba(245,158,11,0.15)', 金:'rgba(148,163,184,0.15)', 水:'rgba(34,211,238,0.15)' };
+
+        // SVG 五邊形雷達圖
+        const cx = 110, cy = 110, maxR = 82;
+        const angles = ELS.map((_, i) => (i * 72 - 90) * Math.PI / 180);
+        const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
+
+        const toXY = (angle: number, r: number) => ({
+          x: cx + r * Math.cos(angle),
+          y: cy + r * Math.sin(angle),
+        });
+
+        const dataPolygon = ELS.map((el, i) => {
+          const pct = (m.elements[el] || 0) / 100;
+          const { x, y } = toXY(angles[i], maxR * pct);
+          return `${x},${y}`;
+        }).join(' ');
+
+        // 主導元素顏色
+        const dominantEl = Object.entries(m.elements).sort((a,b)=>b[1]-a[1])[0][0];
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-4 animate-fade-in bg-black/85 backdrop-blur-md overflow-y-auto">
+            <div className="bg-[#050508] border border-yellow-500/30 max-w-xl w-full relative shadow-[0_0_80px_rgba(234,179,8,0.12)] my-auto">
+              {/* Corner marks */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-yellow-400/50 m-2" />
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-yellow-400/50 m-2" />
+              <button
+                onClick={() => setBaziPopup(false)}
+                className="absolute top-4 right-4 text-yellow-400/60 hover:text-yellow-300 transition-colors z-20"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="p-6 space-y-6">
+                {/* Header */}
+                <div className="text-center">
+                  <div className="text-xs tracking-[0.4em] text-yellow-500/60 mb-1">八字五行矩陣 · 科學解析</div>
+                  <h3 className="text-2xl font-bold text-yellow-200 tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
+                    {fateData.bazi.baziStr}
+                  </h3>
+                  <div className="text-sm text-yellow-400/70 mt-1">
+                    日主：<span className="text-yellow-300 font-bold">{m.dayMaster}（{m.dayMasterElement}）</span>
+                    　身<span className={`font-bold ${m.strength === 'strong' ? 'text-red-300' : m.strength === 'weak' ? 'text-blue-300' : 'text-yellow-300'}`}>
+                      {m.strength === 'strong' ? '強' : m.strength === 'weak' ? '弱' : '中'}
+                    </span>
+                    　生我組：{m.strengthScore}%
+                  </div>
+                </div>
+
+                {/* Radar + Stats side-by-side */}
+                <div className="flex gap-4 items-center">
+                  {/* SVG Radar */}
+                  <div className="flex-shrink-0">
+                    <svg width="220" height="220" viewBox="0 0 220 220">
+                      {/* Grid levels */}
+                      {gridLevels.map(level => (
+                        <polygon
+                          key={level}
+                          points={ELS.map((_, i) => {
+                            const { x, y } = toXY(angles[i], maxR * level);
+                            return `${x},${y}`;
+                          }).join(' ')}
+                          fill="none"
+                          stroke="rgba(234,179,8,0.12)"
+                          strokeWidth="1"
+                        />
+                      ))}
+                      {/* Axis lines */}
+                      {ELS.map((_, i) => {
+                        const outer = toXY(angles[i], maxR);
+                        return <line key={i} x1={cx} y1={cy} x2={outer.x} y2={outer.y} stroke="rgba(234,179,8,0.15)" strokeWidth="1" />;
+                      })}
+                      {/* Data polygon */}
+                      <polygon
+                        points={dataPolygon}
+                        fill={EL_FILL[dominantEl]}
+                        stroke={EL_COLORS[dominantEl]}
+                        strokeWidth="1.5"
+                        strokeOpacity="0.8"
+                      />
+                      {/* Data points */}
+                      {ELS.map((el, i) => {
+                        const pct = (m.elements[el] || 0) / 100;
+                        const { x, y } = toXY(angles[i], maxR * pct);
+                        return <circle key={el} cx={x} cy={y} r="3" fill={EL_COLORS[el]} opacity="0.9" />;
+                      })}
+                      {/* Labels */}
+                      {ELS.map((el, i) => {
+                        const { x, y } = toXY(angles[i], maxR + 18);
+                        const val = m.elements[el] || 0;
+                        return (
+                          <g key={el}>
+                            <text x={x} y={y - 2} textAnchor="middle" fill={EL_COLORS[el]} fontSize="13" fontWeight="bold">{el}</text>
+                            <text x={x} y={y + 11} textAnchor="middle" fill={EL_COLORS[el]} fontSize="9" opacity="0.7">{val.toFixed(0)}%</text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Element bars */}
+                  <div className="flex-1 space-y-2">
+                    {ELS.map(el => {
+                      const val = m.elements[el] || 0;
+                      return (
+                        <div key={el} className="space-y-0.5">
+                          <div className="flex justify-between text-[10px]">
+                            <span style={{ color: EL_COLORS[el] }}>{el}</span>
+                            <span className="text-yellow-400/50">{val.toFixed(1)}%</span>
+                          </div>
+                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-700"
+                              style={{ width: `${val}%`, backgroundColor: EL_COLORS[el], opacity: 0.8 }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="pt-2 text-[10px] text-yellow-500/40 leading-relaxed border-t border-yellow-500/10">
+                      月令加權×2.8｜天干×1.2｜地支×1.0
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pattern */}
+                <div className="border border-yellow-500/20 bg-yellow-900/10 p-4">
+                  <div className="text-xs tracking-[0.3em] text-yellow-500/60 mb-1">格局診斷</div>
+                  <div className="text-lg font-bold text-yellow-300 font-[family-name:var(--font-noto-serif-tc)] mb-2">
+                    ▌{m.pattern}
+                  </div>
+                  <p className="text-yellow-100/80 text-xs leading-relaxed mb-2">{m.patternDesc}</p>
+                  <p className="text-yellow-200 text-xs leading-relaxed font-bold border-l-2 border-yellow-500/40 pl-3">{m.patternAdvice}</p>
+                </div>
+
+                {/* Ten Gods */}
+                <div>
+                  <div className="text-xs tracking-[0.3em] text-yellow-500/60 mb-3 border-b border-yellow-500/10 pb-1">十神分布</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    {(Object.entries(m.tenGodSummary) as [string, number][])
+                      .sort((a,b) => b[1]-a[1])
+                      .map(([god, count]) => (
+                      <div key={god} className="flex items-center gap-2">
+                        <span className="text-yellow-400/70 text-xs w-10">{god}</span>
+                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full bg-yellow-400/50 rounded-full" style={{ width: `${(count / 7) * 100}%` }} />
+                        </div>
+                        <span className="text-yellow-500/40 text-[10px]">{'★'.repeat(count)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Prescription */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="border border-green-500/20 bg-green-900/10 p-3">
+                    <div className="text-[10px] tracking-widest text-green-400/60 mb-1">⬆ 補強（缺{m.prescription.weakElement}）</div>
+                    <p className="text-green-100/80 text-[11px] leading-relaxed">{m.prescription.weak}</p>
+                  </div>
+                  <div className="border border-orange-500/20 bg-orange-900/10 p-3">
+                    <div className="text-[10px] tracking-widest text-orange-400/60 mb-1">⬇ 疏導（旺{m.prescription.strongElement}）</div>
+                    <p className="text-orange-100/80 text-[11px] leading-relaxed">{m.prescription.strong}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setBaziPopup(false)}
+                  className="w-full py-3 bg-yellow-900/30 border border-yellow-500/30 text-yellow-300 hover:bg-yellow-800/50 transition-all text-sm tracking-widest font-bold"
+                >
+                  封存命格報告
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Tarot Deep Dive Modal */}
       {tarotPopup && fateData && (
+
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/85 backdrop-blur-md">
           <div className="bg-[#0a0500] border border-amber-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(245,158,11,0.15)] overflow-hidden">
             {/* Background Abstract Watermark */}
