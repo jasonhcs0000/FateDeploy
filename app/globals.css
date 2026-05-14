@@ -70,8 +70,8 @@ body::before {
   to { background-position: 200% center; }
 }
 
-input[type=date]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+input[type=date] {
+  color-scheme: dark;
 }
 
 .gold-text {
