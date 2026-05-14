@@ -3,7 +3,7 @@ import { Solar, Lunar } from 'lunar-typescript';
 // @ts-ignore
 import * as ephemeris from 'ephemeris';
 
-import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS } from './weightData';
+import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT } from './weightData';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -124,20 +124,32 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   const hdProfile = hdProfiles[(lunarMonth + lunarDay + hourIndex) % hdProfiles.length];
   
   // 4. Tarot (Mapped to Numerology of the Date)
-  const lifePath = (solar.getYear() + solar.getMonth() + solar.getDay()).toString().split('').reduce((a, b) => a + parseInt(b), 0);
-  const finalLifePath = lifePath > 22 ? lifePath % 22 : lifePath;
-  const tarotCards = [
-    { name: "0. 愚者", desc: "充滿無限潛能與冒險精神的自由靈魂。" },
-    { name: "I. 魔術師", desc: "天生具備將顯化現實的創造力。" },
-    { name: "II. 女祭司", desc: "擁有強大的直覺與神秘的內在智慧。" },
-    { name: "III. 皇后", desc: "充滿豐盛與愛，具備滋養萬物的力量。" },
-    { name: "IV. 皇帝", desc: "結構與權威的建立者，掌握現實世界的秩序。" },
-    { name: "X. 命運之輪", desc: "順應天時，天生帶有扭轉乾坤的氣場。" },
-    { name: "XIX. 太陽", desc: "永遠充滿光與熱，能溫暖身邊所有人的生命。" },
-    { name: "XXI. 世界", desc: "靈魂的圓滿，擁有一生順遂與無國界的心胸。" }
-  ];
-  const tarot = tarotCards[finalLifePath % tarotCards.length];
-
+  const dateDigits = format(birthDate, 'yyyyMMdd');
+  let soulSum = 0;
+  for (let i = 0; i < dateDigits.length; i++) {
+    soulSum += parseInt(dateDigits[i]);
+  }
+  
+  if (soulSum > 22) {
+    let tempSum = 0;
+    const sumStr = soulSum.toString();
+    for (let i = 0; i < sumStr.length; i++) {
+      tempSum += parseInt(sumStr[i]);
+    }
+    soulSum = tempSum;
+  }
+  
+  // if soulSum is exactly 22, it stays 22 (The Fool). If it reduces to > 22 again (impossible here since max is 9*8=72 -> 7+2=9), it handles it.
+  const tarotData = TAROT_DICT[soulSum] || TAROT_DICT[22];
+  
+  let tarotWarning = "";
+  if ((soulSum === 4 || soulSum === 7 || soulSum === 8 || soulSum === 15 || soulSum === 16) && (naYin.includes('火') || naYin.includes('金'))) {
+    tarotWarning = `⚠️ 跨維度能量共振備註：你的塔羅靈魂數為『${tarotData.archetype.split(' ')[1]}』，象徵強大的意志與能量；結合你八字中過旺的金火之氣，請務必注意不要讓這股力量變成對他人的侵略與絕對的控制慾。`;
+  } else if ((soulSum === 2 || soulSum === 12 || soulSum === 18) && (naYin.includes('水') || naYin.includes('木'))) {
+    tarotWarning = `⚠️ 跨維度能量共振備註：你的塔羅靈魂數為『${tarotData.archetype.split(' ')[1]}』，象徵深層潛意識的流動；結合你八字中過度蔓延的水木之氣，請務必注意設立情緒界線，不要讓自己溺斃在受害者情結的深淵中。`;
+  }
+  
+  const tarot = { soulNumber: soulSum, data: tarotData, warning: tarotWarning };
   // 5. Authentic Mayan Tzolkin Dreamspell (瑪雅曆)
   const jd = Math.floor(solar.getJulianDay());
   const y = solar.getYear();

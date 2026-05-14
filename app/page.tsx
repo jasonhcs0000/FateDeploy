@@ -18,6 +18,7 @@ export default function Home() {
   
   const [sealPopup, setSealPopup] = useState(false);
   const [sabianPopup, setSabianPopup] = useState(false);
+  const [tarotPopup, setTarotPopup] = useState(false);
 
   const SealedCard = ({ title, icon: Icon, message }: { title: string, icon: any, message: string }) => (
     <div 
@@ -195,7 +196,25 @@ export default function Home() {
             <SealedCard title="人類圖" icon={Activity} message="能量場域掃描中，生命設計圖尚未顯影..." />
 
             {/* 4. Tarot */}
-            <SealedCard title="塔羅大運" icon={Moon} message="命運之輪轉動緩慢，未來牌陣待緣而開..." />
+            <div 
+              onClick={() => setTarotPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-amber-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <Moon className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-amber-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-amber-500/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <Moon className="w-4 h-4 mr-2" /> 塔羅靈魂數
+              </h2>
+              <div className="text-xl font-bold mb-1 text-amber-400 tracking-wider font-[family-name:var(--font-noto-serif-tc)] relative z-10 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]">
+                {fateData.tarot.data.archetype}
+              </div>
+              <div className="text-xs font-mono text-amber-500/60 mb-3 tracking-widest relative z-10">
+                靈魂密碼：{fateData.tarot.soulNumber}
+              </div>
+              <p className="text-amber-100/80 text-sm tracking-wide leading-relaxed border-t border-amber-500/20 pt-3 relative z-10 line-clamp-2">
+                {fateData.tarot.data.power}
+              </p>
+              <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-colors duration-500"></div>
+            </div>
 
             {/* 5. Mayan Tzolkin */}
             <div className="glass-card p-6 relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500">
@@ -350,6 +369,78 @@ export default function Home() {
                 className="mt-8 px-8 py-3 bg-blue-900/40 border border-blue-500/30 text-blue-300 hover:bg-blue-800/60 hover:border-blue-400 transition-all text-sm tracking-widest font-bold w-full"
               >
                 收攏星象
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tarot Deep Dive Modal */}
+      {tarotPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/85 backdrop-blur-md">
+          <div className="bg-[#0a0500] border border-amber-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(245,158,11,0.15)] overflow-hidden">
+            {/* Background Abstract Watermark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
+              <Moon className="w-96 h-96 text-amber-500" />
+            </div>
+
+            <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-amber-500/50 m-2"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-amber-500/50 m-2"></div>
+            
+            <button 
+              onClick={() => setTarotPopup(false)}
+              className="absolute top-4 right-4 text-amber-500/60 hover:text-amber-400 transition-colors z-20"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
+              <div className="text-amber-500 mb-2 tracking-[0.3em] text-xs font-sans">TAROT SOUL NUMBER</div>
+              <h3 className="text-3xl font-black text-amber-400 mb-2 tracking-[0.2em] drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]">
+                {fateData.tarot.data.archetype}
+              </h3>
+              <div className="text-xs font-bold tracking-widest text-amber-600/80 mb-6 border-b border-amber-500/20 pb-2 px-8">
+                靈魂原型解碼
+              </div>
+              
+              <div className="text-left space-y-6 w-full">
+                <div className="bg-amber-900/10 p-4 border border-amber-500/10">
+                  <h4 className="text-xs font-sans tracking-[0.3em] text-amber-500/80 mb-2">天賦強項 (POWER)</h4>
+                  <p className="text-amber-100/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.tarot.data.power}
+                  </p>
+                </div>
+                
+                <div className="bg-red-950/20 p-4 border border-red-500/20 border-l-2 border-l-red-500 shadow-[inset_0_0_15px_rgba(220,38,38,0.05)]">
+                  <h4 className="text-xs font-sans tracking-[0.3em] text-red-400/90 mb-2 flex items-center">
+                    <span className="mr-2">⚔️</span> 情緒盲點 (SHADOW)
+                  </h4>
+                  <p className="text-red-200/90 tracking-wide leading-relaxed text-sm font-medium">
+                    {fateData.tarot.data.shadow}
+                  </p>
+                </div>
+                
+                <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
+                  <h4 className="text-xs font-sans tracking-[0.3em] text-indigo-400/80 mb-2">靈魂進化建議 (MISSION)</h4>
+                  <p className="text-indigo-200 tracking-wide leading-relaxed text-sm font-bold">
+                    {fateData.tarot.data.mission}
+                  </p>
+                </div>
+
+                {fateData.tarot.warning && (
+                  <div className="mt-4 p-3 bg-orange-950/40 border border-orange-500/30 rounded-sm flex items-start">
+                    <p className="text-orange-300 tracking-wide text-xs leading-relaxed font-bold">
+                      {fateData.tarot.warning}
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={() => setTarotPopup(false)}
+                className="mt-8 px-8 py-3 bg-amber-900/20 border border-amber-500/30 text-amber-500 hover:bg-amber-900/40 hover:border-amber-400 transition-all text-sm tracking-widest font-bold w-full"
+              >
+                收攏牌面
               </button>
             </div>
           </div>
