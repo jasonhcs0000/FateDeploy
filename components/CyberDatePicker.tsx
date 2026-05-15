@@ -76,14 +76,24 @@ export const CyberDatePicker: React.FC<CyberDatePickerProps> = ({ value, onChang
   
   return (
     <div className="relative" ref={popoverRef}>
-      {/* Input Field replacing native date picker */}
+      {/* Native Input Field for Mobile */}
+      <div className={`md:hidden relative flex items-center justify-between min-w-full bg-black/60 border rounded-sm outline-none focus-within:ring-2 ${ringColor} ${shadowColor} ${borderColor} ${textColor} transition-all font-mono ${className}`}>
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full bg-transparent px-4 py-3 text-xl outline-none appearance-none color-scheme-dark"
+        />
+      </div>
+
+      {/* Custom Input Field for Desktop */}
       <button 
         type="button"
         onClick={openPicker}
-        className={`flex items-center justify-between min-w-[220px] bg-black/60 border rounded-sm px-6 py-4 text-2xl outline-none focus:ring-2 ${ringColor} ${shadowColor} ${borderColor} ${textColor} transition-all font-mono tracking-[0.1em] ${className}`}
+        className={`hidden md:flex items-center justify-between min-w-[220px] bg-black/60 border rounded-sm px-6 py-4 text-2xl outline-none focus:ring-2 ${ringColor} ${shadowColor} ${borderColor} ${textColor} transition-all font-mono tracking-[0.1em] ${className}`}
       >
         <span>{value}</span>
-        <Calendar className={`w-6 h-6 ml-4 ${isRed ? 'text-red-500/60' : 'text-indigo-500/60'}`} />
+        <Calendar className={`w-6 h-6 ml-4 flex-shrink-0 ${isRed ? 'text-red-500/60' : 'text-indigo-500/60'}`} />
       </button>
 
       {/* Popover Calendar */}

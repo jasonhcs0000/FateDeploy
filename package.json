@@ -11,6 +11,7 @@
   "dependencies": {
     "@oshimishi/dreamspell-math": "^0.3.2",
     "astronomy-engine": "^2.1.19",
+    "cnchar": "^3.2.6",
     "date-fns": "^4.1.0",
     "ephemeris": "^2.2.0",
     "lucide-react": "^1.14.0",

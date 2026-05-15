@@ -5,9 +5,12 @@ import { Sparkles, Scale, Star, Activity, Moon, Crown, SunDim, Compass, BookOpen
 import { calculateFullFate, searchGoldenNodes } from '@/lib/fateLogic';
 import { CyberDatePicker } from '@/components/CyberDatePicker';
 import { STATUS_FLAVOR } from '@/lib/baziLogic';
+import { MAYAN_TONES, MAYAN_TOTEMS } from '@/lib/data/mayanData';
+import { getGridFlavor } from '@/lib/nameLogic';
 
 export default function Home() {
   const [conceptionDate, setConceptionDate] = useState('2026-05-20');
+  const [userName, setUserName] = useState('王大明');
   const [mode, setMode] = useState<'deploy' | 'parse'>('parse');
   const [birthHour, setBirthHour] = useState<number>(0);
   const [fateData, setFateData] = useState<ReturnType<typeof calculateFullFate>>(null);
@@ -24,6 +27,8 @@ export default function Home() {
   const [ichingPopup, setIchingPopup] = useState(false);
   const [ziweiPopup, setZiweiPopup] = useState(false);
   const [baziPopup, setBaziPopup] = useState(false);
+  const [mayanPopup, setMayanPopup] = useState(false);
+  const [namePopup, setNamePopup] = useState(false);
 
   const HexagramVisual = ({ lines, size = 'sm' }: { lines: number[], size?: 'sm'|'lg' }) => {
     const h = size === 'lg' ? 'h-2 mb-1.5' : 'h-1 mb-[2px]';
@@ -82,13 +87,13 @@ export default function Home() {
       iterations++;
       if (iterations > 18) {
         clearInterval(interval);
-        setFateData(calculateFullFate(conceptionDate, mode, birthHour));
+        setFateData(calculateFullFate(conceptionDate, mode, birthHour, userName));
         setIsDecoding(false);
       }
     }, 60);
 
     return () => clearInterval(interval);
-  }, [conceptionDate, mode, birthHour]);
+  }, [conceptionDate, mode, birthHour, userName]);
 
   const handleSearchNodes = () => {
     setIsSearchingNodes(true);
@@ -110,8 +115,8 @@ export default function Home() {
         }`}
       />
 
-      {/* Background Bagua decoration */}
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none rounded-full border-[20px] border-dashed flex items-center justify-center transition-colors duration-1000 ${mode === 'parse' ? 'border-red-900' : 'border-indigo-400'}`}>
+      {/* Background Bagua decoration - hidden on mobile for performance */}
+      <div className={`hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] opacity-[0.03] pointer-events-none rounded-full border-[20px] border-dashed items-center justify-center transition-colors duration-1000 ${mode === 'parse' ? 'border-red-900' : 'border-indigo-400'}`}>
         <div className={`w-[600px] h-[600px] rounded-full border-[10px] flex items-center justify-center transition-colors duration-1000 ${mode === 'parse' ? 'border-red-800' : 'border-indigo-300'}`}>
           <div className="text-[300px] leading-none">☯</div>
         </div>
@@ -151,24 +156,34 @@ export default function Home() {
             <label className={`block text-xl mb-6 font-bold tracking-[0.2em] flex items-center justify-center font-[family-name:var(--font-noto-serif-tc)] transition-colors duration-1000 ${mode === 'parse' ? 'text-red-200' : 'text-indigo-200'}`}>
               <Database className="w-5 h-5 mr-3 opacity-60" /> {mode === 'parse' ? '定位命元降臨時刻' : '定位靈魂初始化時間點'}
             </label>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <CyberDatePicker
-                value={conceptionDate}
-                onChange={setConceptionDate}
-                themeColor={mode === 'parse' ? 'red' : 'indigo'}
-                className="w-full sm:w-auto"
+            <div className="flex flex-col items-center justify-center gap-4 w-full">
+              <input 
+                type="text" 
+                value={userName} 
+                onChange={(e) => setUserName(e.target.value)} 
+                placeholder="輸入姓名，解析三才五格與生肖字根..."
+                className={`bg-black/60 border rounded-sm px-6 py-4 text-xl md:text-2xl outline-none focus:ring-2 transition-all font-[family-name:var(--font-noto-serif-tc)] tracking-[0.2em] text-center w-full max-w-lg shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] ${mode === 'parse' ? 'text-red-300 border-red-900/40 focus:ring-red-500' : 'text-indigo-300 border-indigo-900/40 focus:ring-indigo-500'}`}
               />
-              {mode === 'parse' && (
-                <select 
-                  className="bg-black/60 border border-red-900/40 rounded-sm px-6 py-4 text-2xl text-red-300 outline-none focus:ring-2 focus:ring-red-500 shadow-[inset_0_0_20px_rgba(153,27,27,0.2)] transition-all font-[family-name:var(--font-noto-serif-tc)] tracking-[0.1em] cursor-pointer"
-                  value={birthHour}
-                  onChange={(e) => setBirthHour(Number(e.target.value))}
-                >
-                  {["子時 (23-01)", "丑時 (01-03)", "寅時 (03-05)", "卯時 (05-07)", "辰時 (07-09)", "巳時 (09-11)", "午時 (11-13)", "未時 (13-15)", "申時 (15-17)", "酉時 (17-19)", "戌時 (19-21)", "亥時 (21-23)"].map((label, idx) => (
-                    <option key={idx} value={idx} className="bg-black text-red-200 text-lg">{label}</option>
-                  ))}
-                </select>
-              )}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                <CyberDatePicker
+                  value={conceptionDate}
+                  onChange={setConceptionDate}
+                  themeColor={mode === 'parse' ? 'red' : 'indigo'}
+                  className="w-full sm:w-auto"
+                />
+                {mode === 'parse' && (
+                  <select 
+                    style={{ colorScheme: 'dark' }}
+                    className="bg-black/60 border border-red-900/40 rounded-sm px-6 py-4 text-2xl text-red-300 outline-none focus:ring-2 focus:ring-red-500 shadow-[inset_0_0_20px_rgba(153,27,27,0.2)] transition-all font-[family-name:var(--font-noto-serif-tc)] tracking-[0.1em] cursor-pointer w-full sm:w-auto"
+                    value={birthHour}
+                    onChange={(e) => setBirthHour(Number(e.target.value))}
+                  >
+                    {["子時 (23-01)", "丑時 (01-03)", "寅時 (03-05)", "卯時 (05-07)", "辰時 (07-09)", "巳時 (09-11)", "午時 (11-13)", "未時 (13-15)", "申時 (15-17)", "酉時 (17-19)", "戌時 (19-21)", "亥時 (21-23)"].map((label, idx) => (
+                      <option key={idx} value={idx} className="bg-black text-red-200 text-lg">{label}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             
             <div className="h-24 mt-8 flex items-center justify-center">
@@ -202,7 +217,7 @@ export default function Home() {
 
         {/* Results Grid */}
         {fateData && !isDecoding && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-16 animate-fade-in">
             
             {/* 1. Bazi */}
             <div
@@ -299,7 +314,10 @@ export default function Home() {
             </div>
 
             {/* 5. Mayan Tzolkin */}
-            <div className="glass-card p-6 relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500">
+            <div 
+              onClick={() => setMayanPopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-purple-500/50 transition-all duration-500 cursor-pointer"
+            >
               <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
                 <Settings className="w-[150%] h-[150%] text-purple-400 animate-spin" style={{ animationDuration: '60s' }} />
               </div>
@@ -318,14 +336,20 @@ export default function Home() {
               </p>
             </div>
 
-            {/* 6. Onomancy (Kept functional as requested) */}
-            <div className="glass-card p-6 relative overflow-hidden group hover:border-indigo-500/50 transition-all duration-500">
-              <BookOpen className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-indigo-500" />
-              <h2 className="text-sm mb-4 flex items-center text-indigo-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
-                <BookOpen className="w-4 h-4 mr-2" /> 姓名學
+            {/* 6. Onomancy (The Name Cipher) */}
+            <div 
+              onClick={() => setNamePopup(true)}
+              className="glass-card p-6 relative overflow-hidden group hover:border-indigo-500/50 transition-all duration-500 cursor-pointer"
+            >
+              <BookOpen className="absolute -right-4 -top-4 w-32 h-32 opacity-[0.04] text-indigo-500 group-hover:opacity-10 transition-opacity" />
+              <h2 className="text-sm mb-4 flex items-center text-indigo-400/80 font-bold tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)] relative z-10">
+                <BookOpen className="w-4 h-4 mr-2" /> 姓名符號解構
               </h2>
-              <div className="text-xl font-bold mb-3 text-indigo-300 tracking-wider metallic-gloss font-[family-name:var(--font-noto-serif-tc)]">{fateData.onomancy.zodiac}年出生</div>
-              <p className="text-indigo-100/80 text-sm tracking-wide leading-relaxed border-t border-indigo-500/20 pt-3">{fateData.onomancy.desc}</p>
+              <div className="text-xl font-bold mb-3 text-indigo-300 tracking-wider metallic-gloss font-[family-name:var(--font-noto-serif-tc)] relative z-10">{fateData.onomancy.name} ({fateData.onomancy.zodiac}年出生)</div>
+              <p className="text-indigo-100/80 text-sm tracking-wide leading-relaxed border-t border-indigo-500/20 pt-3 relative z-10 line-clamp-2">
+                {fateData.onomancy.desc}
+              </p>
+              <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/5 transition-colors duration-500"></div>
             </div>
 
             {/* 7. Sabian Symbols */}
@@ -523,21 +547,25 @@ export default function Home() {
         const dominantEl = Object.entries(m.elements).sort((a,b)=>b[1]-a[1])[0][0];
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-4 animate-fade-in bg-black/85 backdrop-blur-md overflow-y-auto">
-            <div className="bg-[#050508] border border-yellow-500/30 max-w-xl w-full relative shadow-[0_0_80px_rgba(234,179,8,0.12)] my-auto">
-              {/* Corner marks */}
-              <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-yellow-400/50 m-2" />
-              <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-yellow-400/50 m-2" />
+          <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-2 py-0 md:py-4 animate-fade-in bg-black/85 backdrop-blur-md overflow-hidden">
+            <div className="bg-[#050508] border-t md:border border-yellow-500/30 max-w-xl w-full h-[90vh] md:h-auto md:max-h-[90vh] rounded-t-[2rem] md:rounded-none relative shadow-[0_-10px_40px_rgba(234,179,8,0.15)] md:shadow-[0_0_80px_rgba(234,179,8,0.12)] flex flex-col md:my-auto animate-slide-up md:animate-scale-up">
+              {/* Corner marks (Desktop only) */}
+              <div className="hidden md:block absolute top-0 right-0 w-8 h-8 border-t border-r border-yellow-400/50 m-2" />
+              <div className="hidden md:block absolute bottom-0 left-0 w-8 h-8 border-b border-l border-yellow-400/50 m-2" />
+              
+              {/* Mobile handle indicator */}
+              <div className="w-12 h-1.5 bg-yellow-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden" />
+
               <button
                 onClick={() => setBaziPopup(false)}
-                className="absolute top-4 right-4 text-yellow-400/60 hover:text-yellow-300 transition-colors z-20"
+                className="absolute top-4 right-4 text-yellow-400/60 hover:text-yellow-300 transition-colors z-20 bg-black/50 rounded-full p-1"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
 
-              <div className="p-6 space-y-6">
+              <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-6">
                 {/* Header */}
-                <div className="text-center">
+                <div className="text-center pt-2 md:pt-0">
                   <div className="text-xs tracking-[0.4em] text-yellow-500/60 mb-1">八字五行矩陣 · 科學解析</div>
                   <h3 className="text-2xl font-bold text-yellow-200 tracking-[0.2em] font-[family-name:var(--font-noto-serif-tc)]">
                     {fateData.bazi.baziStr}
@@ -551,11 +579,11 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Radar + Stats side-by-side */}
-                <div className="flex gap-4 items-center">
+                {/* Radar + Stats side-by-side (Vertical on mobile, horizontal on desktop) */}
+                <div className="flex flex-col md:flex-row gap-6 md:gap-4 items-center">
                   {/* SVG Radar */}
-                  <div className="flex-shrink-0">
-                    <svg width="220" height="220" viewBox="0 0 220 220">
+                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                    <svg className="w-full max-w-[220px] h-auto" viewBox="0 0 220 220">
                       {/* Grid levels */}
                       {gridLevels.map(level => (
                         <polygon
@@ -605,7 +633,7 @@ export default function Home() {
                   </div>
 
                   {/* 古法氣象表 — 旺相休囚死 */}
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-2 w-full md:w-auto">
                     <div className="text-[10px] tracking-[0.3em] text-yellow-500/50 mb-2">月令「{m.monthZhi}」氣象判斷</div>
                     {ELS.map(el => {
                       const status = m.elementStatus?.[el];
@@ -683,7 +711,7 @@ export default function Home() {
                 </div>
 
                 {/* Prescription */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="border border-green-500/20 bg-green-900/10 p-3">
                     <div className="text-[10px] tracking-widest text-green-400/60 mb-1">⬆ 補強（缺{m.prescription.weakElement}）</div>
                     <p className="text-green-100/80 text-[11px] leading-relaxed">{m.prescription.weak}</p>
@@ -709,9 +737,21 @@ export default function Home() {
       {/* Tarot Deep Dive Modal */}
       {tarotPopup && fateData && (
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/85 backdrop-blur-md">
-          <div className="bg-[#0a0500] border border-amber-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(245,158,11,0.15)] overflow-hidden">
-            {/* Background Abstract Watermark */}
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/85 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#0a0500] border-t md:border border-amber-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(245,158,11,0.1)] md:shadow-[0_0_60px_rgba(245,158,11,0.15)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-amber-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setTarotPopup(false)}
+              className="absolute top-4 right-4 text-amber-500/60 hover:text-amber-400 transition-colors z-20 bg-black/50 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+              {/* Background Abstract Watermark */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
               <Moon className="w-96 h-96 text-amber-500" />
             </div>
@@ -719,12 +759,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-amber-500/50 m-2"></div>
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-amber-500/50 m-2"></div>
             
-            <button 
-              onClick={() => setTarotPopup(false)}
-              className="absolute top-4 right-4 text-amber-500/60 hover:text-amber-400 transition-colors z-20"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
 
             <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
               <div className="text-amber-500 mb-2 tracking-[0.3em] text-xs font-sans">TAROT SOUL NUMBER</div>
@@ -775,15 +810,28 @@ export default function Home() {
                 收攏牌面
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Human Design Modal */}
       {hdPopup && fateData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/85 backdrop-blur-md">
-          <div className="bg-[#000a0a] border border-cyan-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(34,211,238,0.15)] overflow-hidden">
-            {/* Background Abstract Watermark */}
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/85 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#000a0a] border-t md:border border-cyan-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(34,211,238,0.1)] md:shadow-[0_0_60px_rgba(34,211,238,0.15)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-cyan-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setHdPopup(false)}
+              className="absolute top-4 right-4 text-cyan-500/60 hover:text-cyan-400 transition-colors z-20 bg-black/50 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+              {/* Background Abstract Watermark */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
               <Activity className="w-96 h-96 text-cyan-500" />
             </div>
@@ -791,12 +839,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-cyan-500/50 m-2"></div>
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-cyan-500/50 m-2"></div>
             
-            <button 
-              onClick={() => setHdPopup(false)}
-              className="absolute top-4 right-4 text-cyan-500/60 hover:text-cyan-400 transition-colors z-20"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
 
             <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
               <div className="text-cyan-500 mb-2 tracking-[0.3em] text-xs font-sans">HUMAN DESIGN DEBUG LOG</div>
@@ -867,15 +910,28 @@ export default function Home() {
                 關閉除錯紀錄
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* IChing Deep Dive Modal */}
       {ichingPopup && fateData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in bg-black/80 backdrop-blur-md">
-          <div className="bg-[#0f0505] border border-rose-500/40 p-8 max-w-lg w-full relative shadow-[0_0_60px_rgba(244,63,94,0.2)] overflow-hidden">
-            {/* Background Spinning Taiji */}
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/80 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#0f0505] border-t md:border border-rose-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(244,63,94,0.1)] md:shadow-[0_0_60px_rgba(244,63,94,0.2)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-rose-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setIchingPopup(false)}
+              className="absolute top-4 right-4 text-rose-400/60 hover:text-rose-300 transition-colors z-20 bg-black/50 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+              {/* Background Spinning Taiji */}
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
               <div className="text-[300px] leading-none animate-spin" style={{ animationDuration: '60s' }}>☯</div>
             </div>
@@ -883,12 +939,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-rose-400/50 m-2"></div>
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-rose-400/50 m-2"></div>
             
-            <button 
-              onClick={() => setIchingPopup(false)}
-              className="absolute top-4 right-4 text-rose-400/60 hover:text-rose-300 transition-colors z-20"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
 
             <div className="relative z-10">
               <div className="flex items-center justify-center mb-6">
@@ -969,6 +1020,7 @@ export default function Home() {
                 關閉戰術面板
               </button>
             </div>
+            </div>
           </div>
         </div>
       )}
@@ -991,8 +1043,20 @@ export default function Home() {
       `}</style>
       {/* Zi Wei Dou Shu Modal */}
       {ziweiPopup && fateData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/90 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#050510] border border-indigo-500/40 p-8 max-w-lg w-full relative shadow-[0_0_80px_rgba(99,102,241,0.2)] overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/90 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#050510] border-t md:border border-indigo-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(99,102,241,0.15)] md:shadow-[0_0_80px_rgba(99,102,241,0.2)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-indigo-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setZiweiPopup(false)}
+              className="absolute top-4 right-4 text-indigo-500/60 hover:text-indigo-400 transition-colors z-20 bg-black/50 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
             {/* Spinning Twelve Houses Watermark */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none" style={{ animation: 'spin 120s linear infinite' }}>
               <div className="w-[600px] h-[600px] border-[1px] border-indigo-400 rounded-full flex items-center justify-center relative">
@@ -1006,12 +1070,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-indigo-500/50 m-2"></div>
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-indigo-500/50 m-2"></div>
             
-            <button 
-              onClick={() => setZiweiPopup(false)}
-              className="absolute top-4 right-4 text-indigo-500/60 hover:text-indigo-400 transition-colors z-20"
-            >
-              <X className="w-5 h-5" />
-            </button>
+
 
             <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
               <div className="text-indigo-500 mb-2 tracking-[0.3em] text-xs font-sans">ZI WEI DOU SHU MATRIX</div>
@@ -1066,6 +1125,225 @@ export default function Home() {
               >
                 收攏星盤
               </button>
+            </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mayan Dreamspell Modal */}
+      {mayanPopup && fateData && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/90 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#050510] border-t md:border border-purple-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(168,85,247,0.15)] md:shadow-[0_0_80px_rgba(168,85,247,0.2)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-purple-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setMayanPopup(false)}
+              className="absolute top-4 right-4 text-purple-500/60 hover:text-purple-400 transition-colors z-20 bg-black/50 rounded-full p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+            {/* Spinning Tzolkin Background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none" style={{ animation: 'spin 120s linear infinite' }}>
+              <Settings className="w-[800px] h-[800px] text-purple-400" />
+            </div>
+
+            <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
+              <div className="text-purple-500 mb-2 tracking-[0.3em] text-xs font-sans">THE MAYAN PULSE</div>
+              <h3 className="text-3xl font-black text-purple-300 mb-2 tracking-[0.2em] drop-shadow-[0_0_15px_rgba(168,85,247,0.6)]">
+                {fateData.mayan.title}
+              </h3>
+              <div className="text-sm font-bold tracking-widest text-purple-400/80 mb-6 border-b border-purple-500/20 pb-2 px-8">
+                {fateData.mayan.kin} · 13月亮曆：第 {fateData.mayan.moonCalendar.moon} 月 第 {fateData.mayan.moonCalendar.day} 天
+              </div>
+              
+              {/* Five Forces Matrix */}
+              <div className="grid grid-cols-3 gap-2 w-full max-w-sm mx-auto mb-8 relative">
+                <div className="col-start-2 flex flex-col items-center p-2 border border-purple-500/30 bg-purple-950/20 shadow-[inset_0_0_10px_rgba(168,85,247,0.1)]">
+                  <div className="text-[10px] text-purple-400/60 mb-1">引導位 (高我)</div>
+                  <div className="text-sm font-bold text-purple-200">{MAYAN_TONES[fateData.mayan.fiveForces.guide.tone - 1]}{MAYAN_TOTEMS[fateData.mayan.fiveForces.guide.totem - 1].name}</div>
+                </div>
+                
+                <div className="col-start-1 row-start-2 flex flex-col items-center justify-center p-2 border border-purple-500/30 bg-purple-950/20 shadow-[inset_0_0_10px_rgba(168,85,247,0.1)]">
+                  <div className="text-[10px] text-purple-400/60 mb-1">支持位 (盟友)</div>
+                  <div className="text-sm font-bold text-purple-200">{MAYAN_TONES[fateData.mayan.fiveForces.support.tone - 1]}{MAYAN_TOTEMS[fateData.mayan.fiveForces.support.totem - 1].name}</div>
+                </div>
+                
+                <div className="col-start-2 row-start-2 flex flex-col items-center justify-center p-3 border border-purple-400 bg-purple-900/40 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                  <div className="text-[10px] text-purple-300/80 mb-1">主印記 (命運)</div>
+                  <div className="text-base font-black text-purple-100">{fateData.mayan.title}</div>
+                </div>
+                
+                <div className="col-start-3 row-start-2 flex flex-col items-center justify-center p-2 border border-purple-500/30 bg-purple-950/20 shadow-[inset_0_0_10px_rgba(168,85,247,0.1)]">
+                  <div className="text-[10px] text-purple-400/60 mb-1">挑戰位 (磨刀石)</div>
+                  <div className="text-sm font-bold text-purple-200">{MAYAN_TONES[fateData.mayan.fiveForces.challenge.tone - 1]}{MAYAN_TOTEMS[fateData.mayan.fiveForces.challenge.totem - 1].name}</div>
+                </div>
+                
+                <div className="col-start-2 row-start-3 flex flex-col items-center justify-center p-2 border border-purple-500/30 bg-purple-950/20 shadow-[inset_0_0_10px_rgba(168,85,247,0.1)]">
+                  <div className="text-[10px] text-purple-400/60 mb-1">隱藏位 (潛能)</div>
+                  <div className="text-sm font-bold text-purple-200">{MAYAN_TONES[fateData.mayan.fiveForces.hidden.tone - 1]}{MAYAN_TOTEMS[fateData.mayan.fiveForces.hidden.totem - 1].name}</div>
+                </div>
+              </div>
+
+              <div className="text-left space-y-6 w-full">
+                {/* 1. Wavespell */}
+                <div className="bg-purple-950/20 p-4 border border-purple-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-purple-400/80 mb-2">所屬波符 (WAVESPELL)</h4>
+                  <div className="text-purple-300 font-bold mb-1">{fateData.mayan.wavespell.name}</div>
+                  <p className="text-purple-200/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.mayan.wavespell.desc}
+                  </p>
+                </div>
+                
+                {/* 2. Totem Desc */}
+                <div className="bg-purple-950/20 p-4 border border-purple-500/20">
+                  <h4 className="text-[10px] font-sans tracking-[0.2em] text-purple-400/80 mb-2">能量共振 (RESONANCE)</h4>
+                  <p className="text-purple-200/90 tracking-wide leading-relaxed text-sm">
+                    {fateData.mayan.desc}
+                  </p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setMayanPopup(false)}
+                className="mt-8 px-8 py-3 bg-purple-900/20 border border-purple-500/30 text-purple-400 hover:bg-purple-900/40 hover:border-purple-400 transition-all active:scale-[0.98] text-sm tracking-widest font-bold w-full"
+              >
+                收攏神諭
+              </button>
+            </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* The Name Cipher Modal */}
+      {namePopup && fateData && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center px-0 md:px-4 py-0 md:py-4 animate-fade-in bg-black/90 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#050510] border-t md:border border-indigo-500/40 max-w-lg w-full max-h-[90vh] md:max-h-[90vh] relative shadow-[0_-10px_40px_rgba(99,102,241,0.15)] md:shadow-[0_0_80px_rgba(99,102,241,0.2)] flex flex-col rounded-t-[2rem] md:rounded-none md:my-auto animate-slide-up md:animate-scale-up">
+            
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1.5 bg-indigo-500/20 rounded-full mx-auto mt-3 mb-1 md:hidden flex-shrink-0" />
+            
+            <button 
+              onClick={() => setNamePopup(false)}
+              className="absolute top-4 right-4 text-indigo-500/60 hover:text-indigo-400 transition-colors z-20 bg-black/50 rounded-full p-1 active:scale-95"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
+              {/* Background Watermark (Humanistic Five Elements) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none flex items-center justify-center">
+                <Hexagon className="w-[500px] h-[500px] text-indigo-300 absolute animate-[spin_60s_linear_infinite]" strokeWidth={0.5} />
+                <Circle className="w-[400px] h-[400px] text-indigo-200 absolute" strokeWidth={1} />
+              </div>
+
+              <div className="flex flex-col items-center text-center mt-4 relative z-10 font-[family-name:var(--font-noto-serif-tc)]">
+                <div className="text-indigo-500 mb-2 tracking-[0.3em] text-xs font-sans">THE NAME CIPHER</div>
+                <h3 className="text-3xl font-black text-indigo-300 mb-2 tracking-[0.2em] drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]">
+                  姓名符號解構
+                </h3>
+                <div className="text-sm font-bold tracking-widest text-indigo-400/80 mb-6 border-b border-indigo-500/20 pb-2 px-8">
+                  {fateData.onomancy.name} · {fateData.onomancy.zodiac}年
+                </div>
+                
+                {/* Three Realms and Five Grids Matrix */}
+                <div className="w-full max-w-sm mx-auto mb-8 relative bg-indigo-950/20 p-4 border border-indigo-500/30">
+                  <div className="text-xs tracking-widest text-indigo-300/60 mb-4 font-bold border-b border-indigo-500/20 pb-2">三才五格吉凶矩陣</div>
+                  <div className="grid grid-cols-3 gap-y-4 gap-x-2 text-sm text-indigo-200">
+                    {/* 天格 */}
+                    <div className="col-start-2 flex flex-col items-center">
+                      <div className="text-[10px] text-indigo-400/60">天格</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg">{fateData.onomancy.fiveGrids.tian}</span>
+                        <span className={`text-[10px] px-1 py-0.5 rounded-sm ${getGridFlavor(fateData.onomancy.fiveGrids.tian) === '吉' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-red-500/20 text-red-300'}`}>{getGridFlavor(fateData.onomancy.fiveGrids.tian)}</span>
+                      </div>
+                    </div>
+                    {/* 人格 */}
+                    <div className="col-start-2 flex flex-col items-center border-t border-indigo-500/20 pt-2">
+                      <div className="text-[10px] text-indigo-400/60">人格 (主運)</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xl font-bold text-indigo-100">{fateData.onomancy.fiveGrids.ren}</span>
+                        <span className={`text-[10px] px-1 py-0.5 rounded-sm ${getGridFlavor(fateData.onomancy.fiveGrids.ren) === '吉' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-red-500/20 text-red-300'}`}>{getGridFlavor(fateData.onomancy.fiveGrids.ren)}</span>
+                      </div>
+                    </div>
+                    {/* 外格 */}
+                    <div className="col-start-3 row-start-2 flex flex-col items-center border-l border-indigo-500/20 pl-2 justify-center">
+                      <div className="text-[10px] text-indigo-400/60">外格 (社交)</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg">{fateData.onomancy.fiveGrids.wai}</span>
+                        <span className={`text-[10px] px-1 py-0.5 rounded-sm ${getGridFlavor(fateData.onomancy.fiveGrids.wai) === '吉' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-red-500/20 text-red-300'}`}>{getGridFlavor(fateData.onomancy.fiveGrids.wai)}</span>
+                      </div>
+                    </div>
+                    {/* 地格 */}
+                    <div className="col-start-2 border-t border-indigo-500/20 pt-2 flex flex-col items-center">
+                      <div className="text-[10px] text-indigo-400/60">地格 (前運)</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg">{fateData.onomancy.fiveGrids.di}</span>
+                        <span className={`text-[10px] px-1 py-0.5 rounded-sm ${getGridFlavor(fateData.onomancy.fiveGrids.di) === '吉' ? 'bg-indigo-500/20 text-indigo-300' : 'bg-red-500/20 text-red-300'}`}>{getGridFlavor(fateData.onomancy.fiveGrids.di)}</span>
+                      </div>
+                    </div>
+                    {/* 總格 */}
+                    <div className="col-span-3 border-t border-indigo-500/40 mt-2 pt-3 flex flex-col items-center">
+                      <div className="text-[10px] text-indigo-400/80">總格 (後運)</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-2xl font-black text-indigo-300">{fateData.onomancy.fiveGrids.zong}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-sm ${getGridFlavor(fateData.onomancy.fiveGrids.zong) === '吉' ? 'bg-indigo-500/30 text-indigo-200' : 'bg-red-500/30 text-red-200'}`}>{getGridFlavor(fateData.onomancy.fiveGrids.zong)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Warning if fallback strokes used */}
+                  {fateData.onomancy.fiveGrids.strokes.some(s => s.isFallback) && (
+                    <div className="text-[9px] text-indigo-500/50 mt-4 text-center">
+                      *部分字體採用標準筆劃演算法替代康熙字典
+                    </div>
+                  )}
+                </div>
+
+                {/* Decryption Log (Terminal Effect) */}
+                <div className="text-left space-y-4 w-full">
+                  <div className="bg-black/60 p-4 border border-indigo-500/30 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] font-mono text-xs overflow-hidden">
+                    <div className="flex items-center mb-3 border-b border-indigo-500/30 pb-2">
+                      <div className="w-2 h-2 rounded-sm bg-indigo-500/30 mr-2"></div>
+                      <span className="text-indigo-300/60 ml-1 tracking-widest font-[family-name:var(--font-noto-serif-tc)]">姓名結構掃描日誌</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-indigo-300/50">正在載入命元生肖字根解析器 [{fateData.onomancy.zodiac}]...</div>
+                      {fateData.onomancy.radicalLogs.map((log, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`animate-fade-in ${log.type === 'CRITICAL' ? 'text-rose-400/90 font-bold' : log.type === 'REINFORCE' ? 'text-teal-400/80 font-bold' : 'text-indigo-300/80'}`}
+                          style={{ animationDelay: `${idx * 0.5}s` }}
+                        >
+                          {log.msg}
+                        </div>
+                      ))}
+                      <div className="text-indigo-300/50 animate-fade-in" style={{ animationDelay: `${fateData.onomancy.radicalLogs.length * 0.5}s` }}>
+                        [掃描完成]
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-indigo-950/20 p-4 border border-indigo-500/20">
+                    <h4 className="text-[10px] font-sans tracking-[0.2em] text-indigo-400/80 mb-2">能量共振 (RESONANCE)</h4>
+                    <p className="text-indigo-200/90 tracking-wide leading-relaxed text-sm">
+                      {fateData.onomancy.desc}
+                    </p>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => setNamePopup(false)}
+                  className="mt-8 px-8 py-3 bg-indigo-900/20 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40 hover:border-indigo-400 transition-all active:scale-[0.98] text-sm tracking-widest font-bold w-full"
+                >
+                  結束掃描
+                </button>
+              </div>
             </div>
           </div>
         </div>

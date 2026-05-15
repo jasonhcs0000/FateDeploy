@@ -6,6 +6,9 @@ import * as ephemeris from 'ephemeris';
 import { YEAR_WEIGHTS_DICT, MONTH_WEIGHTS, DAY_WEIGHTS, HOUR_WEIGHTS_DICT, GanZhi, Zhi, ZODIAC_SIMPLIFIED_MAP, ZODIAC_ON_DATA, MAYAN_TONES, MAYAN_TOTEMS, SABIAN_SYMBOLS, TAROT_DICT, HD_TYPE_DICT, HD_PROFILE_DICT, ICHING_DICT, ZIWEI_DICT } from './weightData';
 import { getHumanDesign } from './humanDesignLogic';
 import { analyzeBazi } from './baziLogic';
+import { getMayanKin, getFiveForces, getWavespell, get13MoonCalendar } from './mayanLogic';
+import { MAYAN_WAVESPELLS } from './data/mayanData';
+import { calculateFiveGrids, getGridFlavor, analyzeNameRadicals } from './nameLogic';
 
 export class BaziWeightEngine {
   static getYearWeight(ganZhi: string): number {
@@ -55,7 +58,7 @@ const HEXAGRAMS = [
   ["山地剝", "山天大畜", "山澤損", "山火賁", "山雷頤", "山風蠱", "山水蒙", "艮為山"]  // 艮(7)
 ];
 
-export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'deploy', hourIndex: number = 0) {
+export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'deploy', hourIndex: number = 0, name: string = "王大明") {
   const inputDate = new Date(dateStr);
   if (isNaN(inputDate.getTime())) return null;
 
@@ -205,35 +208,39 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
   }
   const ziweiDataObj = ZIWEI_DICT[primaryStar] || { destinyVibe: "平穩踏實", coreStrength: "適應力強", lifeChallenge: "過於平凡", hshFortuneAdvice: "穩紮穩打" };
 
-  const jd = Math.floor(solar.getJulianDay());
-  const y = solar.getYear();
-  let m = solar.getMonth();
-  const d = solar.getDay();
-  if (m < 3) {
-    m += 12;
-  }
-  const a = Math.floor(y / 100);
-  const b = 2 - a + Math.floor(a / 4);
-  const epochJulian = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + b - 1524;
-  const baseKin = (epochJulian - 2459762) % 260; // 2459762 was Kin 1
-  let kin = baseKin;
-  if (kin <= 0) kin += 260;
+  // 5. Mayan Dreamspell
+  const mayanKinNum = getMayanKin(birthDate);
+  const fiveForces = getFiveForces(mayanKinNum);
+  const wavespellInfo = getWavespell(mayanKinNum);
+  const moonCalendar = get13MoonCalendar(birthDate);
   
-  const totemData = MAYAN_TOTEMS[(kin - 1) % 20];
-  const tone = MAYAN_TONES[(kin - 1) % 13];
+  const mayanDestinyTotem = MAYAN_TOTEMS[fiveForces.destiny.totem - 1];
+  const mayanDestinyTone = MAYAN_TONES[fiveForces.destiny.tone - 1];
 
   const rawZodiac = lunar.getYearShengXiao();
   const zodiac = ZODIAC_SIMPLIFIED_MAP[rawZodiac] || rawZodiac;
-  const onomancyData = ZODIAC_ON_DATA[zodiac];
+  const onomancyRawData = ZODIAC_ON_DATA[zodiac];
   let onomancyDesc = '';
-  if (onomancyData) {
-    onomancyDesc = `本命屬${zodiac}，${onomancyData.nature}。起名喜用：${onomancyData.favorable}；忌用：${onomancyData.taboo}。`;
+  if (onomancyRawData) {
+    onomancyDesc = `本命屬${zodiac}，${onomancyRawData.nature}。起名喜用：${onomancyRawData.favorable}；忌用：${onomancyRawData.taboo}。`;
   } else {
     onomancyDesc = `本命屬${zodiac}，起名宜順應生肖本性，喜用相生之五行字根。`;
   }
   if (weightNum >= 5.0) {
     onomancyDesc += "（天選之子模式：建議起名時選用金、木屬性字根，以增強命格結構。）";
   }
+
+  // 6. Name Cipher (姓名學符號解構)
+  const fiveGrids = calculateFiveGrids(name);
+  const radicalLogs = analyzeNameRadicals(name, zodiac);
+  
+  const onomancyData = {
+    name,
+    zodiac,
+    desc: onomancyDesc,
+    fiveGrids,
+    radicalLogs
+  };
 
   // 6b. Sabian Symbols via Scientific Solar Longitude
   // 全站天文數據同步：使用和人類圖相同的太陽黃經
@@ -360,9 +367,21 @@ export function calculateFullFate(dateStr: string, mode: 'deploy' | 'parse' = 'd
       sunLongitude: sciSunLongitude,
     },
     tarot: { soulNumber: soulSum, data: tarotDataObj, warning: tarotWarning },
-    mayan: { kin: `Kin ${kin}`, title: `${tone}${totemData.name}`, desc: totemData.desc },
-    onomancy: { zodiac: zodiac, desc: onomancyDesc },
-    astrology: { 
+    mayan: { 
+      kin: `Kin ${mayanKinNum}`, 
+      title: `${mayanDestinyTone}${mayanDestinyTotem.name}`, 
+      desc: mayanDestinyTotem.desc,
+      color: mayanDestinyTotem.color,
+      fiveForces,
+      wavespell: {
+        kin: wavespellInfo.kin,
+        name: `${MAYAN_TOTEMS[wavespellInfo.totem - 1].name}波符`,
+        desc: MAYAN_WAVESPELLS[wavespellInfo.kin] || "未知波符"
+      },
+      moonCalendar
+    },
+    onomancy: onomancyData,
+    astrology: {  
       sabian: `${sign} ${signDegree}度`, 
       sabianPrecise: `${sign} ${signDegreeExact}°`,
       absoluteDegree: absoluteDegree,
